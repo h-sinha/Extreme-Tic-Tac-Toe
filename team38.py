@@ -4,8 +4,8 @@ class Bot:
         self.flag = flag #1 = Max player (X), 2 = Min player (O)
         self.available_moves = [self.find_available_moves(i) for i in xrange(19683)]
         self.position_weight = [4, 3, 4, 3, 6, 3, 4, 3, 4]
-        self.P = [self.P(i) for i in xrange(19683)]
-        pass
+        self.P = [self.find_P(i) for i in xrange(19683)]
+        return
     def find_available_moves(self, state):
         j = int(1)
         possibilities = []
@@ -15,7 +15,7 @@ class Bot:
                 possibilities.append(int(self.flag*j))
             j *= 3
         return possibilities
-    def find_small_pattern(self, state):
+    def find_pattern(self, state):
         j = int(1)
         small_board = []
         for _ in xrange(9):
@@ -33,12 +33,11 @@ class Bot:
         	patterns.append([i, i + 3, i + 6]);
         patterns.append([0, 4, 8]);
         patterns.append([2, 4, 6]);
-        a = [0, 0];
-        b = [0, 0];
+        a = [0, 0, 0, 0]
         for pattern in patterns:
-        	self.find_small_pattern_helper(small_board, pattern, a, b);
-        return a,b;
-    def find_small_pattern_helper(self, small_board, pattern, a, b):
+        	self.find_pattern_helper(small_board, pattern, a);
+        return a;
+    def find_pattern_helper(self, small_board, pattern, a):
     	player1 = 0
     	player2 = 0
     	for position in pattern:
@@ -51,10 +50,10 @@ class Bot:
     		if player1 == 3 - x and player2 == 0:
     			a[x] += 1
     		if player2 == 3 - x and player1 == 0:
-    			b[x] += 1
+    			a[x + 2] += 1
     	return
     def find_P(self, state):
-        # A_0, A_1, B_0, B_1 = 
+        A_0, A_1, B_0, B_1 = self.find_pattern(state)
         sum_of_position_weights = int(0)
         for i in xrange(9):
             state, value = divmod(state, 3)
@@ -64,5 +63,5 @@ class Bot:
 
     # def move(self, board, old_move, flag):
 test = Bot(1)
-print test.find_small_pattern(9760)
+print test.find_pattern(9760)
 # print test.available_moves[9112]
