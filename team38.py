@@ -36,7 +36,7 @@ class Bot:
         a = [0, 0, 0, 0]
         for pattern in patterns:
         	self.find_pattern_helper(small_board, pattern, a);
-        return a;
+        return tuple(a);
     def find_pattern_helper(self, small_board, pattern, a):
     	player1 = 0
     	player2 = 0
@@ -62,6 +62,6 @@ class Bot:
         return (50 * A_0) + (10 * A_1) + (25 * B_0) + (5 * B_1) + sum_of_position_weights
 
     # def move(self, board, old_move, flag):
-test = Bot(1)
-print test.find_pattern(9760)
+test = Bot(2)
+print test.find_pattern(14762)
 # print test.available_moves[9112]
