@@ -41,6 +41,7 @@ class Manual_Player:
 	def __init__(self):
 		pass
 	def move(self, board, old_move, flag):
+		print old_move
 		print 'Enter your move: <format:board row column> (you\'re playing with', flag + ")"	
 		mvp = raw_input()
 		mvp = mvp.split()

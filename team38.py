@@ -66,22 +66,21 @@ class Bot:
         for _ in xrange(9):
             state, value = divmod(state, 3)
             parse_board.append(value)
-        patterns = [];
+        patterns = []
         for i in xrange(3):
-            patterns.append([i*3, i*3 +1, i*3 + 2]);
-            patterns.append([i, i + 3, i + 6]);
-        patterns.append([0, 4, 8]);
-        patterns.append([2, 4, 6]);
+            patterns.append([i*3, i*3 +1, i*3 + 2])
+            patterns.append([i, i + 3, i + 6])
+        patterns.append([0, 4, 8])
+        patterns.append([2, 4, 6])
         a = [0, 0, 0, 0]
         for pattern in patterns:
             if parse_board[pattern[0]] == parse_board[pattern[1]] and parse_board[pattern[1]] == parse_board[pattern[2]] and parse_board[pattern[0]] != 0:
                 return 1
         for mark in parse_board:
             if mark == 0:
-                return 0;
+                return 0
         return 1
-    # def move(self, board, old_move, flag):
-
+    
     def move(self, board, old_move, flag):
         # We need to update our internal board from the board passed
         for big_board in xrange(2):
@@ -94,7 +93,7 @@ class Bot:
                     elif board.big_boards_status[big_board][small_board][position] == 'o':
                         state += 2
                 self.board[big_board][small_board] = state
-        return self.ai_move(old_move[2])
+        return self.ai_move((3*old_move[1])+old_move[2])
 test = Bot(2)
 print test.find_pattern(14762)
 # print test.available_moves[9112]
