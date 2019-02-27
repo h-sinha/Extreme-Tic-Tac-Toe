@@ -95,7 +95,16 @@ class Bot:
                 self.board[big_board][small_board] = state
         #We need specify the next possible smallboard position
         #in terms of 0-9
-        return self.ai_move((3*old_move[1])+old_move[2])
+        big_board, small_board, move = self.ai_move((3 * old_move[1]) + old_move[2])
+        small_position = -1
+        for i in xrange(9):
+            move, value = divmod(move, 3)
+            if value != 0:
+                small_position = i
+                break
+        big_row, big_col = divmod(small_board, 3)
+        small_row, small_col = divmod(small_position, 3)
+        return (big_board, (big_row*3)+small_row, (big_col*3)+small_col)
 test = Bot(2)
 print test.find_pattern(14762)
 # print test.available_moves[9112]
