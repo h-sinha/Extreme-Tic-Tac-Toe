@@ -114,17 +114,82 @@ class Bot:
         small_row, small_col = divmod(small_position, 3)
         return (big_board, (big_row * 3) + small_row, (big_col * 3) + small_col)
     def ai_move(self, direction, flag):
-        if not self.is_abandon[self.board[0][direction]] and not self.is_abandon[self.board[1][direction]]:
-            big_board = random.randrange(2)
-            move = self.available_moves[flag-1][self.board[big_board][direction]][random.randrange(len(self.available_moves[flag-1][self.board[big_board][direction]]))]
-            print self.available_moves[flag - 1][self.board[big_board][direction]]
-            print self.board[big_board][direction]
-            return (big_board, direction, move)
-        elif not self.is_abandon[self.board[1][direction]]:
-            move = self.available_moves[flag-1][self.board[1][direction]][random.randrange(len(self.available_moves[flag-1][self.board[1][direction]]))]
-            return (1, direction, move)
-        elif not self.is_abandon[self.board[0][direction]]:
-            move = self.available_moves[flag-1][self.board[0][direction]][random.randrange(len(self.available_moves[flag-1][self.board[0][direction]]))]
-            return (0, direction, move)
-        else:
-            return self.ai_move(random.randrange(9), flag)
+        # if not self.is_abandon[self.board[0][direction]] and not self.is_abandon[self.board[1][direction]]:
+        #     big_board = random.randrange(2)
+        #     move = self.available_moves[flag-1][self.board[big_board][direction]][random.randrange(len(self.available_moves[flag-1][self.board[big_board][direction]]))]
+        #     print self.available_moves[flag - 1][self.board[big_board][direction]]
+        #     print self.board[big_board][direction]
+        #     return (big_board, direction, move)
+        # elif not self.is_abandon[self.board[1][direction]]:
+        #     move = self.available_moves[flag-1][self.board[1][direction]][random.randrange(len(self.available_moves[flag-1][self.board[1][direction]]))]
+        #     return (1, direction, move)
+        # elif not self.is_abandon[self.board[0][direction]]:
+        #     move = self.available_moves[flag-1][self.board[0][direction]][random.randrange(len(self.available_moves[flag-1][self.board[0][direction]]))]
+        #     return (0, direction, move)
+        # else:
+        #     return self.ai_move(random.randrange(9), flag)
+        ret = self.alpha_beta(direction, 5, -2000, 2000, flag)[0:3]
+        print ret
+        return ret
+    def alpha_beta(self, direction, depth, alpha, beta, flag):
+        # if depth == 0:
+        #     ret = 2000
+        #     board_idx = 0 
+        #     for i in xrange(2):
+        #         if not self.is_abandon[self.board[i][direction]]:
+        #             for move in self.available_moves[flag - 1][self.board[i][direction]]:
+        #                 if self.P[flag - 1][self.board[i][direction] + move] < ret:
+        #                     ret = self.P[flag - 1][self.board[i][direction] + move]
+        #                     cur_move = move
+        #                     board_idx = i
+        #     # print(board_idx, direction,cur_move, ret)
+        #     return (board_idx, direction , cur_move, ret)
+        # board_idx = 0
+        # cur_move = -1
+        # new_direction = 0
+        # if flag == 1:
+        #     value = -2000
+        #     for i in xrange(2):
+        #         if alpha >= beta:
+        #                 break
+        #         for move in self.available_moves[flag - 1][self.board[i][direction]]:
+        #             temp_move = move
+        #             for idx in xrange(9):
+        #                 move, value = divmod(move, 3)
+        #                 if value != 0:
+        #                     new_direction = idx
+        #                     break
+        #             ret = self.alpha_beta(new_direction, depth - 1, alpha, beta, 3 - flag)     
+        #             if alpha < ret[3]:
+        #                 board_idx = i
+        #                 direction = new_direction
+        #                 cur_move = temp_move
+        #             alpha = max(ret[3], alpha)
+        #             if alpha >= beta:
+        #                 break
+        # elif flag == 2:
+        #     value = 2000
+        #     new_direction = 0
+        #     for i in xrange(2):
+        #         if alpha >= beta:
+        #                 break
+        #         for move in self.available_moves[flag - 1][self.board[i][direction]]:
+        #             temp_move = move
+        #             for idx in xrange(9):
+        #                 move, value = divmod(move, 3)
+        #                 if value != 0:
+        #                     new_direction = idx
+        #                     break
+        #             ret = self.alpha_beta(new_direction, depth - 1, alpha, beta, 3 - flag)     
+        #             if beta > ret[3]:
+        #                 board_idx = i
+        #                 direction = new_direction
+        #                 cur_move = temp_move
+        #             beta = min(ret[3], beta)
+        #             if alpha >= beta:
+        #                 break
+        # return (board_idx, direction , cur_move, ret)
+
+        # (self.is_abandon(self.board[0][direction] and self.is_abandon(self.board[1][direction]))):
+# test = Bot();
+# print test.alpha_beta(0, 5, -1000, 1000, 1)
