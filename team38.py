@@ -60,7 +60,25 @@ class Bot:
             if value == self.flag:
                 sum_of_position_weights += self.position_weight[i]
         return (50 * A_0) + (10 * A_1) + (25 * B_0) + (5 * B_1) + sum_of_position_weights
-
+    def find_if_abandon(self, state):
+        parse_board = []
+        for _ in xrange(9):
+            state, value = divmod(state, 3)
+            parse_board.append(value)
+        patterns = [];
+        for i in xrange(3):
+            patterns.append([i*3, i*3 +1, i*3 + 2]);
+            patterns.append([i, i + 3, i + 6]);
+        patterns.append([0, 4, 8]);
+        patterns.append([2, 4, 6]);
+        a = [0, 0, 0, 0]
+        for pattern in patterns:
+            if parse_board[pattern[0]] == parse_board[pattern[1]] and parse_board[pattern[1]] == parse_board[pattern[2]] and parse_board[pattern[0]] != 0:
+                return 1
+        for mark in parse_board:
+            if mark == 0:
+                return 0;
+        return 1
     # def move(self, board, old_move, flag):
 test = Bot(2)
 print test.find_pattern(14762)
