@@ -17,7 +17,7 @@ class Bot:
                 possibilities.append(int(flag*j))
             j *= 3
         return possibilities
-    def find_pattern(self, state):
+    def find_pattern(self, state, flag):
         j = int(1)
         small_board = []
         for _ in xrange(9):
@@ -37,13 +37,13 @@ class Bot:
         patterns.append([2, 4, 6])
         a = [0, 0, 0, 0]
         for pattern in patterns:
-        	self.find_pattern_helper(small_board, pattern, a)
+        	self.find_pattern_helper(small_board, pattern, a, flag)
         return tuple(a)
-    def find_pattern_helper(self, small_board, pattern, a):
+    def find_pattern_helper(self, small_board, pattern, a, flag):
     	player1 = 0
     	player2 = 0
     	for position in pattern:
-    		if small_board[position] == self.flag:
+    		if small_board[position] == flag:
     			player1 += 1
     		elif small_board[position] != 0:
     			player2 += 1
