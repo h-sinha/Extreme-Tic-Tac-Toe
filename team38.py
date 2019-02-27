@@ -5,6 +5,7 @@ class Bot:
         self.available_moves = [[self.find_available_moves(i, j + 1) for i in xrange(19683)] for j in xrange(2)]
         self.position_weight = [4, 3, 4, 3, 6, 3, 4, 3, 4]
         self.P = [[self.find_P(i, j + 1) for i in xrange(19683)] for j in xrange(2)]
+        self.P_big = [[self.find_P_big(i, j+1) for i in xrange(262144)] for j in xrange(2)]
         self.is_abandon = [self.find_if_abandon(i) for i in xrange(19683)]
         self.board = [[int(0) for i in xrange(9)] for j in xrange(2)]
         return
@@ -61,6 +62,14 @@ class Bot:
             if value == flag:
                 sum_of_position_weights += self.position_weight[i]
         return (50 * A_0) + (10 * A_1) + (25 * B_0) + (5 * B_1) + sum_of_position_weights
+    def find_P_big(self, state, flag):
+        A_0, A_1, B_0, B_1 = self.find_big_pattern(state, flag)
+        sum_of_position_weights = int(0)
+        for i in xrange(9):
+            state, value = divmod(state, 4)
+            if value == flag:
+                sum_of_position_weights += self.position_weight[i]
+        return (50 * A_0) + (10 * A_1) + (25 * B_0) + (5 * B_1) + sum_of_position_weights
     def find_if_abandon(self, state):
         parse_board = []
         for _ in xrange(9):
@@ -114,17 +123,4 @@ class Bot:
         small_row, small_col = divmod(small_position, 3)
         return (big_board, (big_row * 3) + small_row, (big_col * 3) + small_col)
     def ai_move(self, direction, flag):
-        if not self.is_abandon[self.board[0][direction]] and not self.is_abandon[self.board[1][direction]]:
-            big_board = random.randrange(2)
-            move = self.available_moves[flag-1][self.board[big_board][direction]][random.randrange(len(self.available_moves[flag-1][self.board[big_board][direction]]))]
-            print self.available_moves[flag - 1][self.board[big_board][direction]]
-            print self.board[big_board][direction]
-            return (big_board, direction, move)
-        elif not self.is_abandon[self.board[1][direction]]:
-            move = self.available_moves[flag-1][self.board[1][direction]][random.randrange(len(self.available_moves[flag-1][self.board[1][direction]]))]
-            return (1, direction, move)
-        elif not self.is_abandon[self.board[0][direction]]:
-            move = self.available_moves[flag-1][self.board[0][direction]][random.randrange(len(self.available_moves[flag-1][self.board[0][direction]]))]
-            return (0, direction, move)
-        else:
-            return self.ai_move(random.randrange(9), flag)
+        
