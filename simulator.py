@@ -232,7 +232,7 @@ def player_turn(game_board, old_move, obj, ply, opp, flg):
 		update_status, small_board_won = game_board.update(old_move, p_move, flg)
 		if update_status == 'UNSUCCESSFUL':
 			WINNER = opp
-			MESSAGE = 'INVALID MOVE'
+			MESSAGE = 'INVALID MOVE, ' + str(p_move)
 			pts[opp] = MAX_PTS
 			return p_move, WINNER, MESSAGE, pts["P1"], pts["P2"], True, False
 
