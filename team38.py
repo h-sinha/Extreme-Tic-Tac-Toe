@@ -1,20 +1,20 @@
 
 class Bot:
     def __init__(self, flag):
-        self.flag = flag #1 = Max player (X), 2 = Min player (O)
-        self.available_moves = [self.find_available_moves(i) for i in xrange(19683)]
+        #Flag => 1 = Max player (X), 2 = Min player (O)
+        self.available_moves = [[self.find_available_moves(i, j) for i in xrange(19683)] for j in xrange(2)]
         self.position_weight = [4, 3, 4, 3, 6, 3, 4, 3, 4]
         self.P = [self.find_P(i) for i in xrange(19683)]
         self.is_abandon = [self.find_if_abandon(i) for i in xrange(19683)]
         self.board = [[int(0)] * 9] * 2
         return
-    def find_available_moves(self, state):
+    def find_available_moves(self, state, flag):
         j = int(1)
         possibilities = []
         for _ in xrange(9):
             state, value = divmod(state, 3)
             if value == 0:
-                possibilities.append(int(self.flag*j))
+                possibilities.append(int(flag*j))
             j *= 3
         return possibilities
     def find_pattern(self, state):
