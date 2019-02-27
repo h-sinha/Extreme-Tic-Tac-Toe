@@ -6,7 +6,7 @@ class Bot:
         self.position_weight = [4, 3, 4, 3, 6, 3, 4, 3, 4]
         self.P = [[self.find_P(i, j + 1) for i in xrange(19683)] for j in xrange(2)]
         self.is_abandon = [self.find_if_abandon(i) for i in xrange(19683)]
-        self.board = [[int(0)] * 9] * 2
+        self.board = [[int(0) for i in xrange(9)] for j in xrange(2)]
         return
     def find_available_moves(self, state, flag):
         j = int(1)
@@ -75,22 +75,25 @@ class Bot:
         a = [0, 0, 0, 0]
         for pattern in patterns:
             if parse_board[pattern[0]] == parse_board[pattern[1]] and parse_board[pattern[1]] == parse_board[pattern[2]] and parse_board[pattern[0]] != 0:
-                return 1
+                return True
         for mark in parse_board:
             if mark == 0:
-                return 0
-        return 1
+                return False
+        return True
     
     def move(self, board, old_move, flag):
         # We need to update our internal board from the board passed
         for big_board in xrange(2):
             for small_board in xrange(9):
                 state = int(0)
+                big_row, big_col = divmod(small_board, 3)
                 for position in xrange(8, -1, -1):
+                    small_row, small_col = divmod(position, 3)
+                    # print big_board, small_board, board.big_boards_status[big_board][(3*big_row)+small_row][(3*big_col)+small_col]
                     state *= 3
-                    if board.big_boards_status[big_board][small_board][position] == 'x':
+                    if board.big_boards_status[big_board][(3*big_row)+small_row][(3*big_col)+small_col] == 'x':
                         state += 1
-                    elif board.big_boards_status[big_board][small_board][position] == 'o':
+                    elif board.big_boards_status[big_board][(3*big_row)+small_row][(3*big_col)+small_col] == 'o':
                         state += 2
                 self.board[big_board][small_board] = state
         #We need specify the next possible smallboard position
@@ -102,7 +105,6 @@ class Bot:
             print old_move
             big_board, small_board, move = self.ai_move((3 * (old_move[1]%3)) + old_move[2]%3, 1 if flag == 'x' else 2)
         small_position = -1
-        print big_board, small_board, move
         for i in xrange(9):
             move, value = divmod(move, 3)
             if value != 0:
@@ -112,18 +114,17 @@ class Bot:
         small_row, small_col = divmod(small_position, 3)
         return (big_board, (big_row * 3) + small_row, (big_col * 3) + small_col)
     def ai_move(self, direction, flag):
-        print direction
         if not self.is_abandon[self.board[0][direction]] and not self.is_abandon[self.board[1][direction]]:
             big_board = random.randrange(2)
             move = self.available_moves[flag-1][self.board[big_board][direction]][random.randrange(len(self.available_moves[flag-1][self.board[big_board][direction]]))]
             print self.available_moves[flag - 1][self.board[big_board][direction]]
             print self.board[big_board][direction]
             return (big_board, direction, move)
-        elif self.is_abandon[self.board[0][direction]]:
+        elif not self.is_abandon[self.board[1][direction]]:
             move = self.available_moves[flag-1][self.board[1][direction]][random.randrange(len(self.available_moves[flag-1][self.board[1][direction]]))]
             return (1, direction, move)
-        elif self.is_abandon[self.board[1][direction]]:
+        elif not self.is_abandon[self.board[0][direction]]:
             move = self.available_moves[flag-1][self.board[0][direction]][random.randrange(len(self.available_moves[flag-1][self.board[0][direction]]))]
-            return (1, direction, move)
+            return (0, direction, move)
         else:
-            return self.ai_move(random.randrange(9), flag) 
+            return self.ai_move(random.randrange(9), flag)
