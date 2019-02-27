@@ -5,7 +5,7 @@ class Bot:
         self.available_moves = [[self.find_available_moves(i, j + 1) for i in xrange(19683)] for j in xrange(2)]
         self.position_weight = [4, 3, 4, 3, 6, 3, 4, 3, 4]
         self.P = [[self.find_P(i, j + 1) for i in xrange(19683)] for j in xrange(2)]
-        self.P_big = [[self.find_P_big(i, j+1) for i in xrange(262144)] for j in xrange(2)]
+        # self.P_big = [[self.find_P_big(i, j+1) for i in xrange(262144)] for j in xrange(2)]
         self.is_abandon = [self.find_if_abandon(i) for i in xrange(19683)]
         self.board = [[int(0) for i in xrange(9)] for j in xrange(2)]
         return
@@ -54,6 +54,44 @@ class Bot:
     		if player2 == 3 - x and player1 == 0:
     			a[x + 2] += 1
     	return
+    def find_big_pattern(self, state, flag):
+        small_board = []
+        for _ in xrange(9):
+            state, value = divmod(state, 4)
+            if value == 0:
+                small_board.append(0) #free
+            elif value == 1:
+                small_board.append(1)
+            elif value == 2:
+                small_board.append(2)
+            else: 
+                small_board.append(3)  #draw
+        patterns = []
+        for i in xrange(3):
+            patterns.append([i*3, i*3 +1, i*3 + 2])
+            patterns.append([i, i + 3, i + 6])
+        patterns.append([0, 4, 8])
+        patterns.append([2, 4, 6])
+        a = [0, 0, 0, 0]
+        for pattern in patterns:
+            self.find_big_pattern_helper(small_board, pattern, a, flag)
+        return tuple(a)
+    def find_big_pattern_helper(self, small_board, pattern, a, flag):
+        player1 = 0
+        player2 = 0
+        for position in pattern:
+            if small_board[position] == flag:
+                player1 += 1
+            elif small_board[position] == 3 - flag:
+                player2 += 1
+            elif small_board[position] == 3:
+                return
+        for x in xrange(2):
+            if player1 == 3 - x and player2 == 0:
+                a[x] += 1
+            if player2 == 3 - x and player1 == 0:
+                a[x + 2] += 1
+        return
     def find_P(self, state, flag):
         A_0, A_1, B_0, B_1 = self.find_pattern(state, flag)
         sum_of_position_weights = int(0)
@@ -83,12 +121,15 @@ class Bot:
         patterns.append([2, 4, 6])
         a = [0, 0, 0, 0]
         for pattern in patterns:
-            if parse_board[pattern[0]] == parse_board[pattern[1]] and parse_board[pattern[1]] == parse_board[pattern[2]] and parse_board[pattern[0]] != 0:
-                return True
+            if parse_board[pattern[0]] == parse_board[pattern[1]] and parse_board[pattern[1]] == parse_board[pattern[2]] and parse_board[pattern[0]] == 1:
+                return 1
+            if parse_board[pattern[0]] == parse_board[pattern[1]] and parse_board[pattern[1]] == parse_board[pattern[2]] and parse_board[pattern[0]] == 2:
+                return 2
+
         for mark in parse_board:
             if mark == 0:
-                return False
-        return True
+                return 0
+        return 3
     
     def move(self, board, old_move, flag):
         # We need to update our internal board from the board passed
@@ -122,5 +163,6 @@ class Bot:
         big_row, big_col = divmod(small_board, 3)
         small_row, small_col = divmod(small_position, 3)
         return (big_board, (big_row * 3) + small_row, (big_col * 3) + small_col)
-    def ai_move(self, direction, flag):
-        
+    # def ai_move(self, direction, flag):
+test = Bot();
+print test.find_big_pattern(4317, 2)
