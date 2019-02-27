@@ -16,6 +16,7 @@ import signal
 import time
 import copy
 import traceback
+from team38 import Bot as Random_Player
 
 TIME = 24
 MAX_PTS = 86
@@ -27,15 +28,15 @@ def handler(signum, frame):
 	#print 'Signal handler called with signal', signum
 	raise TimedOutExc()
 
-class Random_Player():
-	def __init__(self):
-		pass
+# class Random_Player():
+# 	def __init__(self):
+# 		pass
 
-	def move(self, board, old_move, flag):
-		#You have to implement the move function with the same signature as this
-		#Find the list of valid cells allowed
-		cells = board.find_valid_move_cells(old_move)
-		return cells[random.randrange(len(cells))]
+# 	def move(self, board, old_move, flag):
+# 		#You have to implement the move function with the same signature as this
+# 		#Find the list of valid cells allowed
+# 		cells = board.find_valid_move_cells(old_move)
+# 		return cells[random.randrange(len(cells))]
 
 class Manual_Player:
 	def __init__(self):
