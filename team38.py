@@ -8,6 +8,7 @@ class Bot:
         self.P_big = [[self.find_P_big(i, j+1) for i in xrange(262144)] for j in xrange(2)]
         self.is_abandon = [self.find_if_abandon(i) for i in xrange(19683)]
         self.board = [[int(0) for i in xrange(9)] for j in xrange(2)]
+        self.big_state = [int(0), int(0)]
         return
     def find_available_moves(self, state, flag):
         j = int(1)
@@ -89,7 +90,31 @@ class Bot:
             if mark == 0:
                 return False
         return True
-    
+    def make_move(self, board, direction, move):
+        self.board[board][direction] += move
+        if self.is_abandon[self.board[board][direction]] != 0:
+            m = self.is_abandon[state]
+            for i in xrange(9):
+                if i == direction:
+                    self.big_board[board] += m
+                    break
+                m *= 4
+        for i in xrange(9):
+            move, value = divmod(move, 3)
+            if value != 0:
+                direction = i
+                break
+        return direction
+    def undo_move(self, board, direction, move):
+        if self.is_abandon[self.board[board][direction]] != 0:
+            m = self.is_abandon[state]
+            for i in xrange(9):
+                if i == direction:
+                    self.big_board[board] -= m
+                    break
+                m *= 4
+        self.board[board][direction] -= move
+        return
     def move(self, board, old_move, flag):
         # We need to update our internal board from the board passed
         for big_board in xrange(2):
