@@ -4,7 +4,7 @@ class Bot:
         #Flag => 1 = Max player (X), 2 = Min player (O)
         self.available_moves = [[self.find_available_moves(i, j) for i in xrange(19683)] for j in xrange(2)]
         self.position_weight = [4, 3, 4, 3, 6, 3, 4, 3, 4]
-        self.P = [self.find_P(i) for i in xrange(19683)]
+        self.P = [[self.find_P(i, j) for i in xrange(19683)] for j in xrange(2)]
         self.is_abandon = [self.find_if_abandon(i) for i in xrange(19683)]
         self.board = [[int(0)] * 9] * 2
         return
@@ -53,12 +53,12 @@ class Bot:
     		if player2 == 3 - x and player1 == 0:
     			a[x + 2] += 1
     	return
-    def find_P(self, state):
-        A_0, A_1, B_0, B_1 = self.find_pattern(state)
+    def find_P(self, state, flag):
+        A_0, A_1, B_0, B_1 = self.find_pattern(state, flag)
         sum_of_position_weights = int(0)
         for i in xrange(9):
             state, value = divmod(state, 3)
-            if value == self.flag:
+            if value == flag:
                 sum_of_position_weights += self.position_weight[i]
         return (50 * A_0) + (10 * A_1) + (25 * B_0) + (5 * B_1) + sum_of_position_weights
     def find_if_abandon(self, state):
@@ -104,7 +104,7 @@ class Bot:
                 break
         big_row, big_col = divmod(small_board, 3)
         small_row, small_col = divmod(small_position, 3)
-        return (big_board, (big_row*3)+small_row, (big_col*3)+small_col)
+        return (big_board, (big_row * 3) + small_row, (big_col * 3) + small_col)
 test = Bot(2)
 print test.find_pattern(14762)
 # print test.available_moves[9112]
