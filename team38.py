@@ -93,6 +93,8 @@ class Bot:
                     elif board.big_boards_status[big_board][small_board][position] == 'o':
                         state += 2
                 self.board[big_board][small_board] = state
+        #We need specify the next possible smallboard position
+        #in terms of 0-9
         return self.ai_move((3*old_move[1])+old_move[2])
 test = Bot(2)
 print test.find_pattern(14762)
