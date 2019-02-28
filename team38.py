@@ -130,6 +130,18 @@ class Bot:
                     elif board.big_boards_status[big_board][(3*big_row)+small_row][(3*big_col)+small_col] == 'o':
                         state += 2
                 self.board[big_board][small_board] = state
+        for big_board in xrange(2):
+            state = int(0)
+            for cell in xrange(8, -1, -1):
+                state *= 3
+                row, col = divmod(cell, 3)
+                if board.small_boards_status[big_board][row][col] == 'x':
+                    state += 1
+                elif board.small_boards_status[big_board][row][col] == 'o':
+                    state += 2
+                elif board.small_boards_status[big_board][row][col] == 'd':
+                    state += 3
+            self.big_state[big_board] = state
         #We need specify the next possible smallboard position
         #in terms of 0-9
         if old_move[0] == -1:
