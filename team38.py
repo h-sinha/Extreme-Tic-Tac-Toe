@@ -5,8 +5,10 @@ class Bot:
         self.available_moves = [[self.find_available_moves(i, j + 1) for i in xrange(19683)] for j in xrange(2)]
         self.position_weight = [4, 3, 4, 3, 6, 3, 4, 3, 4]
         self.P = [[self.find_P(i, j + 1) for i in xrange(19683)] for j in xrange(2)]
+        self.P_big = [[self.find_P_big(i, j+1) for i in xrange(262144)] for j in xrange(2)]
         self.is_abandon = [self.find_if_abandon(i) for i in xrange(19683)]
         self.board = [[int(0) for i in xrange(9)] for j in xrange(2)]
+        self.big_state = [int(0), int(0)]
         return
     def find_available_moves(self, state, flag):
         j = int(1)
@@ -54,6 +56,7 @@ class Bot:
     			a[x + 2] += 1
     	return
     def find_big_pattern(self, state, flag):
+        #Not tested, tread with caution!
         small_board = []
         for _ in xrange(9):
             state, value = divmod(state, 4)
@@ -76,6 +79,7 @@ class Bot:
             self.find_big_pattern_helper(small_board, pattern, a, flag)
         return tuple(a)
     def find_big_pattern_helper(self, small_board, pattern, a, flag):
+        #Not tested, tread with caution!
         player1 = 0
         player2 = 0
         for position in pattern:
@@ -92,10 +96,20 @@ class Bot:
                 a[x + 2] += 1
         return
     def find_P(self, state, flag):
+        #Not tested, tread with caution!
         A_0, A_1, B_0, B_1 = self.find_pattern(state, flag)
         sum_of_position_weights = int(0)
         for i in xrange(9):
             state, value = divmod(state, 3)
+            if value == flag:
+                sum_of_position_weights += self.position_weight[i]
+        return (50 * A_0) + (10 * A_1) + (25 * B_0) + (5 * B_1) + sum_of_position_weights
+    def find_P_big(self, state, flag):
+        #Not tested, tread with caution!
+        A_0, A_1, B_0, B_1 = self.find_big_pattern(state, flag)
+        sum_of_position_weights = int(0)
+        for i in xrange(9):
+            state, value = divmod(state, 4)
             if value == flag:
                 sum_of_position_weights += self.position_weight[i]
         return (50 * A_0) + (10 * A_1) + (25 * B_0) + (5 * B_1) + sum_of_position_weights
@@ -118,7 +132,31 @@ class Bot:
             if mark == 0:
                 return False
         return True
-    
+    def make_move(self, board, direction, move):
+        self.board[board][direction] += move
+        if self.is_abandon[self.board[board][direction]] != 0:
+            m = self.is_abandon[state]
+            for i in xrange(9):
+                if i == direction:
+                    self.big_board[board] += m
+                    break
+                m *= 4
+        for i in xrange(9):
+            move, value = divmod(move, 3)
+            if value != 0:
+                direction = i
+                break
+        return direction
+    def undo_move(self, board, direction, move):
+        if self.is_abandon[self.board[board][direction]] != 0:
+            m = self.is_abandon[state]
+            for i in xrange(9):
+                if i == direction:
+                    self.big_board[board] -= m
+                    break
+                m *= 4
+        self.board[board][direction] -= move
+        return
     def move(self, board, old_move, flag):
         # We need to update our internal board from the board passed
         for big_board in xrange(2):
@@ -134,6 +172,19 @@ class Bot:
                     elif board.big_boards_status[big_board][(3*big_row)+small_row][(3*big_col)+small_col] == 'o':
                         state += 2
                 self.board[big_board][small_board] = state
+        #Not tested, tread with caution!
+        for big_board in xrange(2):
+            state = int(0)
+            for cell in xrange(8, -1, -1):
+                state *= 4
+                row, col = divmod(cell, 3)
+                if board.small_boards_status[big_board][row][col] == 'x':
+                    state += 1
+                elif board.small_boards_status[big_board][row][col] == 'o':
+                    state += 2
+                elif board.small_boards_status[big_board][row][col] == 'd':
+                    state += 3
+            self.big_state[big_board] = state
         #We need specify the next possible smallboard position
         #in terms of 0-9
         if old_move[0] == -1:
@@ -152,82 +203,5 @@ class Bot:
         small_row, small_col = divmod(small_position, 3)
         return (big_board, (big_row * 3) + small_row, (big_col * 3) + small_col)
     def ai_move(self, direction, flag):
-        # if not self.is_abandon[self.board[0][direction]] and not self.is_abandon[self.board[1][direction]]:
-        #     big_board = random.randrange(2)
-        #     move = self.available_moves[flag-1][self.board[big_board][direction]][random.randrange(len(self.available_moves[flag-1][self.board[big_board][direction]]))]
-        #     print self.available_moves[flag - 1][self.board[big_board][direction]]
-        #     print self.board[big_board][direction]
-        #     return (big_board, direction, move)
-        # elif not self.is_abandon[self.board[1][direction]]:
-        #     move = self.available_moves[flag-1][self.board[1][direction]][random.randrange(len(self.available_moves[flag-1][self.board[1][direction]]))]
-        #     return (1, direction, move)
-        # elif not self.is_abandon[self.board[0][direction]]:
-        #     move = self.available_moves[flag-1][self.board[0][direction]][random.randrange(len(self.available_moves[flag-1][self.board[0][direction]]))]
-        #     return (0, direction, move)
-        # else:
-        #     return self.ai_move(random.randrange(9), flag)
-        ret = self.alpha_beta(direction, 5, -2000, 2000, flag)[0:3]
-        print ret
-        return ret
-    def alpha_beta(self, direction, depth, alpha, beta, flag):
-        # if depth == 0:
-        #     ret = 2000
-        #     board_idx = 0 
-        #     for i in xrange(2):
-        #         if not self.is_abandon[self.board[i][direction]]:
-        #             for move in self.available_moves[flag - 1][self.board[i][direction]]:
-        #                 if self.P[flag - 1][self.board[i][direction] + move] < ret:
-        #                     ret = self.P[flag - 1][self.board[i][direction] + move]
-        #                     cur_move = move
-        #                     board_idx = i
-        #     # print(board_idx, direction,cur_move, ret)
-        #     return (board_idx, direction , cur_move, ret)
-        # board_idx = 0
-        # cur_move = -1
-        # new_direction = 0
-        # if flag == 1:
-        #     value = -2000
-        #     for i in xrange(2):
-        #         if alpha >= beta:
-        #                 break
-        #         for move in self.available_moves[flag - 1][self.board[i][direction]]:
-        #             temp_move = move
-        #             for idx in xrange(9):
-        #                 move, value = divmod(move, 3)
-        #                 if value != 0:
-        #                     new_direction = idx
-        #                     break
-        #             ret = self.alpha_beta(new_direction, depth - 1, alpha, beta, 3 - flag)     
-        #             if alpha < ret[3]:
-        #                 board_idx = i
-        #                 direction = new_direction
-        #                 cur_move = temp_move
-        #             alpha = max(ret[3], alpha)
-        #             if alpha >= beta:
-        #                 break
-        # elif flag == 2:
-        #     value = 2000
-        #     new_direction = 0
-        #     for i in xrange(2):
-        #         if alpha >= beta:
-        #                 break
-        #         for move in self.available_moves[flag - 1][self.board[i][direction]]:
-        #             temp_move = move
-        #             for idx in xrange(9):
-        #                 move, value = divmod(move, 3)
-        #                 if value != 0:
-        #                     new_direction = idx
-        #                     break
-        #             ret = self.alpha_beta(new_direction, depth - 1, alpha, beta, 3 - flag)     
-        #             if beta > ret[3]:
-        #                 board_idx = i
-        #                 direction = new_direction
-        #                 cur_move = temp_move
-        #             beta = min(ret[3], beta)
-        #             if alpha >= beta:
-        #                 break
-        # return (board_idx, direction , cur_move, ret)
-
-        # (self.is_abandon(self.board[0][direction] and self.is_abandon(self.board[1][direction]))):
-# test = Bot();
-# print test.alpha_beta(0, 5, -1000, 1000, 1)
+      
+   
