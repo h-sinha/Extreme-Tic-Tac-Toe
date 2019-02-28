@@ -56,6 +56,7 @@ class Bot:
     			a[x + 2] += 1
     	return
     def find_P(self, state, flag):
+        #Not tested, tread with caution!
         A_0, A_1, B_0, B_1 = self.find_pattern(state, flag)
         sum_of_position_weights = int(0)
         for i in xrange(9):
@@ -64,6 +65,7 @@ class Bot:
                 sum_of_position_weights += self.position_weight[i]
         return (50 * A_0) + (10 * A_1) + (25 * B_0) + (5 * B_1) + sum_of_position_weights
     def find_P_big(self, state, flag):
+        #Not tested, tread with caution!
         A_0, A_1, B_0, B_1 = self.find_big_pattern(state, flag)
         sum_of_position_weights = int(0)
         for i in xrange(9):
@@ -130,10 +132,11 @@ class Bot:
                     elif board.big_boards_status[big_board][(3*big_row)+small_row][(3*big_col)+small_col] == 'o':
                         state += 2
                 self.board[big_board][small_board] = state
+        #Not tested, tread with caution!
         for big_board in xrange(2):
             state = int(0)
             for cell in xrange(8, -1, -1):
-                state *= 3
+                state *= 4
                 row, col = divmod(cell, 3)
                 if board.small_boards_status[big_board][row][col] == 'x':
                     state += 1
