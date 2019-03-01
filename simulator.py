@@ -17,6 +17,7 @@ import time
 import copy
 import traceback
 from team38 import Bot as My_Bot
+from team11 import Team11 as Rand_Player
 
 TIME = 24
 MAX_PTS = 86
@@ -247,7 +248,7 @@ def player_turn(game_board, old_move, obj, ply, opp, flg):
 			WINNER = 'NONE'
 			MESSAGE = 'DRAW'
 			return p_move, WINNER, MESSAGE, pts["P1"], pts["P2"], True, False
-
+		time.sleep(2)
 		return p_move, WINNER, MESSAGE, pts["P1"], pts["P2"], False, small_board_won
 
 def gameplay(obj1, obj2):				#game simulator
@@ -365,8 +366,8 @@ if __name__ == '__main__':
 	obj2 = ''
 	option = sys.argv[1]	
 	if option == '1':
-		obj2 = My_Bot()
-		obj1 = Random_Player()
+		obj2 = Random_Player()
+		obj1 = Rand_Player()
 
 	elif option == '2':
 		obj1 = Random_Player()

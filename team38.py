@@ -250,7 +250,7 @@ class Bot:
         first_board_free = True if self.is_abandon[first_board] == 0 else False
         second_board_free = True if self.is_abandon[second_board]  == 0 else False
         if depth <= 0:
-            return - self.get_heuristic(direction, first_board, second_board, first_board_free, second_board_free), -1, -1, -1
+            return self.get_heuristic(direction, first_board, second_board, first_board_free, second_board_free), -1, -1, -1
         big_board_to_play = -1
         move_to_play = -1
         direction_to_play = direction
