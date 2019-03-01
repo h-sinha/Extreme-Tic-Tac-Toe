@@ -107,7 +107,7 @@ class Bot:
                 m *= 4
         else:
             self.flag = 3 - self.flag
-            if self.bonus = True:
+            if self.bonus == True:
                 self.bonus = False
                 bonus_transition = True
         for i in xrange(9):
@@ -176,9 +176,12 @@ class Bot:
         big_row, big_col = divmod(small_board, 3)
         small_row, small_col = divmod(small_position, 3)
         return (big_board, (big_row * 3) + small_row, (big_col * 3) + small_col)
+    def get_heuristic(direction):
+        return P[self.board[0][direction]]*P_big[0] + P[self.board[1][direction]]*P_big[1]
+
     def minimax(self, alpha, beta, depth, direction):
         if depth == 0:
-            return - self.get_heuristic()
+            return - self.get_heuristic(direction)
         first_board = self.board[0][direction]
         second_board = self.board[1][direction]
         first_board_free = True if self.is_abandon[first_board] else False
