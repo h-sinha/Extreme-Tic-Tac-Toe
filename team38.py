@@ -10,6 +10,7 @@ class Bot:
         self.board = [[int(0) for i in xrange(9)] for j in xrange(2)]
         self.big_state = [int(0), int(0)]
         return
+    # Finds all possible moves and return in the for of 3^cell_number
     def find_available_moves(self, state, flag):
         j = int(1)
         possibilities = []
@@ -19,6 +20,7 @@ class Bot:
                 possibilities.append(int(flag*j))
             j *= 3
         return possibilities
+    # Returns (a_0, a_1, b_0, b_1) for small board
     def find_pattern(self, state, flag):
         j = int(1)
         small_board = []
@@ -55,6 +57,7 @@ class Bot:
     		if player2 == 3 - x and player1 == 0:
     			a[x + 2] += 1
     	return
+    # Returns (a_0, a_1, b_0, b_1) for big board
     def find_big_pattern(self, state, flag):
         #Not tested, tread with caution!
         small_board = []
@@ -95,6 +98,7 @@ class Bot:
             if player2 == 3 - x and player1 == 0:
                 a[x + 2] += 1
         return
+    # Returns P for small board
     def find_P(self, state, flag):
         #Not tested, tread with caution!
         A_0, A_1, B_0, B_1 = self.find_pattern(state, flag)
@@ -104,6 +108,7 @@ class Bot:
             if value == flag:
                 sum_of_position_weights += self.position_weight[i]
         return (50 * A_0) + (10 * A_1) + (25 * B_0) + (5 * B_1) + sum_of_position_weights
+    # Returns P for big board
     def find_P_big(self, state, flag):
         #Not tested, tread with caution!
         A_0, A_1, B_0, B_1 = self.find_big_pattern(state, flag)
@@ -113,6 +118,8 @@ class Bot:
             if value == flag:
                 sum_of_position_weights += self.position_weight[i]
         return (50 * A_0) + (10 * A_1) + (25 * B_0) + (5 * B_1) + sum_of_position_weights
+    # Returns true if board is abandoned else False
+    # Abandoned => Won, Draw
     def find_if_abandon(self, state):
         parse_board = []
         for _ in xrange(9):
@@ -132,6 +139,7 @@ class Bot:
             if mark == 0:
                 return False
         return True
+    # Update board state based on move
     def make_move(self, board, direction, move):
         self.board[board][direction] += move
         if self.is_abandon[self.board[board][direction]] != 0:
@@ -147,6 +155,7 @@ class Bot:
                 direction = i
                 break
         return direction
+    # Undo move's effect
     def undo_move(self, board, direction, move):
         if self.is_abandon[self.board[board][direction]] != 0:
             m = self.is_abandon[state]
@@ -157,6 +166,7 @@ class Bot:
                 m *= 4
         self.board[board][direction] -= move
         return
+    # Updates board state and returns next move to simulator
     def move(self, board, old_move, flag):
         # We need to update our internal board from the board passed
         for big_board in xrange(2):
@@ -173,6 +183,7 @@ class Bot:
                         state += 2
                 self.board[big_board][small_board] = state
         #Not tested, tread with caution!
+        # Updates big_board state
         for big_board in xrange(2):
             state = int(0)
             for cell in xrange(8, -1, -1):
