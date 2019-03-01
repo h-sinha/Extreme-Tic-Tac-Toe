@@ -141,22 +141,31 @@ class Bot:
         return True
     # Update board state based on move
     def make_move(self, board, direction, move):
+        #Not tested, tread with caution!
+        bonus_transition = False
         self.board[board][direction] += move
         if self.is_abandon[self.board[board][direction]] != 0:
             m = self.is_abandon[state]
+            if not is_bonus and m == self.flag:
+                self.bonus = True
             for i in xrange(9):
                 if i == direction:
                     self.big_board[board] += m
                     break
                 m *= 4
+        else:
+            self.flag = 3 - self.flag
+            if self.bonus == True:
+                self.bonus = False
+                bonus_transition = True
         for i in xrange(9):
             move, value = divmod(move, 3)
             if value != 0:
                 direction = i
                 break
-        return direction
-    # Undo move's effect
-    def undo_move(self, board, direction, move):
+        return direction, bonus_transition
+    def undo_move(self, board, direction, move, bonus_transition):
+        #Not tested, tread with caution!
         if self.is_abandon[self.board[board][direction]] != 0:
             m = self.is_abandon[state]
             for i in xrange(9):
@@ -165,6 +174,10 @@ class Bot:
                     break
                 m *= 4
         self.board[board][direction] -= move
+        if not self.bonus:
+            self.flag = 3 - self.flag
+        if bonus_transition:
+            self.bonus = True
         return
     # Updates board state and returns next move to simulator
     def move(self, board, old_move, flag):
@@ -213,6 +226,145 @@ class Bot:
         big_row, big_col = divmod(small_board, 3)
         small_row, small_col = divmod(small_position, 3)
         return (big_board, (big_row * 3) + small_row, (big_col * 3) + small_col)
+    def get_heuristic(direction):
+        return P[self.board[0][direction]]*P_big[0] + P[self.board[1][direction]]*P_big[1]
+
+    def minimax(self, alpha, beta, depth, direction):
+        if depth == 0:
+            return - self.get_heuristic(direction)
+        first_board = self.board[0][direction]
+        second_board = self.board[1][direction]
+        first_board_free = True if self.is_abandon[first_board] else False
+        second_board_free = True if self.is_abandon[second_board] else False
+        big_board_to_play = -1
+        move_to_play = -1
+        direction_to_play = direction
+        value = -1000000
+        if self.flag == 2:
+            #We are the min player but acting as max player
+            if first_board_free:
+                for mov in self.available_moves[first_board]:
+                    new_direction, bonus_transition = self.make_move(0, direction, mov)
+                    child_value, _, _, _ = self.minimax(alpha, beta, depth - 1, new_direction)
+                    self.undo_move(0, direction, move, bonus_transition)
+                    if child_value > value:
+                        value = child_value
+                        big_board_to_play = 0
+                        move_to_play = mov
+                    if value > alpha:
+                        alpha = value
+                        if alpha >= beta:
+                            return value, big_board_to_play, move_to_play, direction_to_play
+            if second_board_free:
+                for mov in self.available_moves[second_board]:
+                    new_direction, bonus_transition = self.make_move(1, direction, mov)
+                    child_value, _, _, _ = self.minimax(alpha, beta, depth - 1, new_direction)
+                    self.undo_move(1, direction, move, bonus_transition)
+                    if child_value > value:
+                        value = child_value
+                        big_board_to_play = 1
+                        move_to_play = mov
+                    if value > alpha:
+                        alpha = value
+                        if alpha >= beta:
+                            return value, big_board_to_play, move_to_play, direction_to_play
+            if big_board_to_play == -1:
+                # Open Move
+                for new_direction in xrange(9):
+                    first_board = self.board[0][direction]
+                    second_board = self.board[1][direction]
+                    first_board_free = True if self.is_abandon[first_board] else False
+                    second_board_free = True if self.is_abandon[second_board] else False
+                    if first_board_free:
+                        for mov in self.available_moves[first_board]:
+                            new_direction, bonus_transition = self.make_move(0, direction, mov)
+                            child_value, _, _, _ = self.minimax(alpha, beta, depth - 1, new_direction)
+                            self.undo_move(0, direction, move, bonus_transition)
+                            if child_value > value:
+                                value = child_value
+                                big_board_to_play = 0
+                                move_to_play = mov
+                            if value > alpha:
+                                alpha = value
+                                if alpha >= beta:
+                                    return value, big_board_to_play, move_to_play, direction_to_play
+                    if second_board_free:
+                        for mov in self.available_moves[second_board]:
+                            new_direction, bonus_transition = self.make_move(1, direction, mov)
+                            child_value, _, _, _ = self.minimax(alpha, beta, depth - 1, new_direction)
+                            self.undo_move(1, direction, move, bonus_transition)
+                            if child_value > value:
+                                value = child_value
+                                big_board_to_play = 1
+                                move_to_play = mov
+                            if value > alpha:
+                                alpha = value
+                                if alpha >= beta:
+                                    return value, big_board_to_play, move_to_play, direction_to_play
+        elif self.flag == 1:
+            #We are the max player but acting as min player
+            value = 1000000
+            if first_board_free:
+                for mov in self.available_moves[first_board]:
+                    new_direction, bonus_transition = self.make_move(0, direction, mov)
+                    child_value, _, _, _ = self.minimax(alpha, beta, depth - 1, new_direction)
+                    self.undo_move(0, direction, move, bonus_transition)
+                    if child_value < value:
+                        value = child_value
+                        big_board_to_play = 0
+                        move_to_play = mov
+                    if value < beta:
+                        beta = value
+                        if alpha >= beta:
+                            return value, big_board_to_play, move_to_play, direction_to_play
+            if second_board_free:
+                for mov in self.available_moves[second_board]:
+                    new_direction, bonus_transition = self.make_move(1, direction, mov)
+                    child_value, _, _, _ = self.minimax(alpha, beta, depth - 1, new_direction)
+                    self.undo_move(1, direction, move, bonus_transition)
+                    if child_value < value:
+                        value = child_value
+                        big_board_to_play = 1
+                        move_to_play = mov
+                    if value < beta:
+                        beta = value
+                        if alpha >= beta:
+                            return value, big_board_to_play, move_to_play, direction_to_play
+            if big_board_to_play == -1:
+                # Open Move
+                for new_direction in xrange(9):
+                    first_board = self.board[0][direction]
+                    second_board = self.board[1][direction]
+                    first_board_free = True if self.is_abandon[first_board] else False
+                    second_board_free = True if self.is_abandon[second_board] else False
+                    if first_board_free:
+                        for mov in self.available_moves[first_board]:
+                            new_direction, bonus_transition = self.make_move(0, direction, mov)
+                            child_value, _, _, _ = self.minimax(alpha, beta, depth - 1, new_direction)
+                            self.undo_move(0, direction, move, bonus_transition)
+                            if child_value < value:
+                                value = child_value
+                                big_board_to_play = 0
+                                move_to_play = mov
+                            if value < beta:
+                                beta = value
+                                if alpha >= beta:
+                                    return value, big_board_to_play, move_to_play, direction_to_play
+                    if second_board_free:
+                        for mov in self.available_moves[second_board]:
+                            new_direction, bonus_transition = self.make_move(1, direction, mov)
+                            child_value, _, _, _ = self.minimax(alpha, beta, depth - 1, new_direction)
+                            self.undo_move(1, direction, move, bonus_transition)
+                            if child_value < value:
+                                value = child_value
+                                big_board_to_play = 1
+                                move_to_play = mov
+                            if value < beta:
+                                beta = value
+                                if alpha >= beta:
+                                    return value, big_board_to_play, move_to_play, direction_to_play
+        return value, big_board_to_play, move_to_play
     def ai_move(self, direction, flag):
-      
-   
+        self.flag = flag
+        _, big_board, move, direction = self.minimax(-1000000, 1000000, 5, direction)
+        return big_board, direction, move
