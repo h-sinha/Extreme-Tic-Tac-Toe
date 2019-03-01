@@ -89,7 +89,7 @@ class Bot:
             if parse_board[pattern[0]] == parse_board[pattern[1]] and parse_board[pattern[1]] == parse_board[pattern[2]] and parse_board[pattern[0]] != 0:
                 return True
         for mark in parse_board:
-     small_boards_status       if mark == 0:
+            if mark == 0:
                 return False
         return True
     def make_move(self, board, direction, move):
