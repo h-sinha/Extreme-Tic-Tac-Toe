@@ -145,6 +145,11 @@ class Bot:
     # Update board state based on move
     def make_move(self, board, direction, move):
         #Not tested, tread with caution!
+        if self.is_abandon[self.board[board][direction]] != 0:
+            print board, direction, move
+            print self.board
+            print self.big_state
+            exit()
         bonus_transition = False
         self.board[board][direction] += move
         state = self.board[board][direction]
@@ -281,11 +286,11 @@ class Bot:
                 print big_board_to_play, direction
             if big_board_to_play == -1:
                 # Open Move
-                for new_direction in xrange(9):
+                for direction in xrange(9):
                     first_board = self.board[0][direction]
                     second_board = self.board[1][direction]
-                    first_board_free = True if self.is_abandon[first_board] else False
-                    second_board_free = True if self.is_abandon[second_board] else False
+                    first_board_free = True if self.is_abandon[first_board] == 0 else False
+                    second_board_free = True if self.is_abandon[second_board] == 0 else False
                     if first_board_free:
                         for mov in self.available_moves[self.flag-1][first_board]:
                             new_direction, bonus_transition = self.make_move(0, direction, mov)
@@ -295,6 +300,7 @@ class Bot:
                                 value = child_value
                                 big_board_to_play = 0
                                 move_to_play = mov
+                                direction_to_play = direction
                             if value > alpha:
                                 alpha = value
                                 if alpha >= beta:
@@ -308,6 +314,7 @@ class Bot:
                                 value = child_value
                                 big_board_to_play = 1
                                 move_to_play = mov
+                                direction_to_play = direction
                             if value > alpha:
                                 alpha = value
                                 if alpha >= beta:
@@ -346,17 +353,18 @@ class Bot:
                 for direction in xrange(9):
                     first_board = self.board[0][direction]
                     second_board = self.board[1][direction]
-                    first_board_free = True if self.is_abandon[first_board] else False
-                    second_board_free = True if self.is_abandon[second_board] else False
+                    first_board_free = True if self.is_abandon[first_board] == 0 else False
+                    second_board_free = True if self.is_abandon[second_board] == 0 else False
                     if first_board_free:
                         for mov in self.available_moves[self.flag-1][first_board]:
                             new_direction, bonus_transition = self.make_move(0, direction, mov)
-                            child_value, _, _, _ = self.minimax(alpha, beta, depth - 1, direction)
+                            child_value, _, _, _ = self.minimax(alpha, beta, depth - 1, new_direction)
                             self.undo_move(0, direction, mov, bonus_transition)
                             if child_value < value:
                                 value = child_value
                                 big_board_to_play = 0
                                 move_to_play = mov
+                                direction_to_play = direction
                             if value < beta:
                                 beta = value
                                 if alpha >= beta:
@@ -364,12 +372,13 @@ class Bot:
                     if second_board_free:
                         for mov in self.available_moves[self.flag-1][second_board]:
                             new_direction, bonus_transition = self.make_move(1, direction, mov)
-                            child_value, _, _, _ = self.minimax(alpha, beta, depth - 1, direction)
+                            child_value, _, _, _ = self.minimax(alpha, beta, depth - 1, new_direction)
                             self.undo_move(1, direction, mov, bonus_transition)
                             if child_value < value:
                                 value = child_value
                                 big_board_to_play = 1
                                 move_to_play = mov
+                                direction_to_play = direction
                             if value < beta:
                                 beta = value
                                 if alpha >= beta:
@@ -377,5 +386,5 @@ class Bot:
         return value, big_board_to_play, move_to_play, direction_to_play
     def ai_move(self, direction, flag):
         self.flag = flag
-        _, big_board, move, direction = self.minimax(-1000000, 1000000, 5, direction)
+        _, big_board, move, direction = self.minimax(-1000000, 1000000, 6, direction)
         return big_board, direction, move

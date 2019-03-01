@@ -304,7 +304,8 @@ def gameplay(obj1, obj2):				#game simulator
 
 	print "Winner:", WINNER
 	print "Message", MESSAGE
-
+	if WINNER == "P1":
+		exit(1)
 	x = 0
 	d = 0
 	o = 0
