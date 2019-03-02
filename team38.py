@@ -112,7 +112,7 @@ class Bot:
             state, value = divmod(state, 3)
             if value == flag:
                 sum_of_position_weights += self.position_weight[i]
-        return (50 * A_0) + (10 * A_1) + (25 * B_0) + (5 * B_1) + sum_of_position_weights
+        return (50 * A_0) + (10 * A_1) - (25 * B_0) - (5 * B_1) + sum_of_position_weights
     # Returns P for big board
     def find_P_big(self, state, flag):
         #Not tested, tread with caution!
@@ -122,7 +122,7 @@ class Bot:
             state, value = divmod(state, 4)
             if value == flag:
                 sum_of_position_weights += self.position_weight[i]
-        return (50 * A_0) + (10 * A_1) + (25 * B_0) + (5 * B_1) + sum_of_position_weights
+        return (50 * A_0) + (10 * A_1) - (25 * B_0) - (5 * B_1) + sum_of_position_weights
     # Returns true if board is abandoned else False
     # Abandoned => Won, Draw
     def find_if_abandon(self, state):
@@ -239,11 +239,19 @@ class Bot:
         big_row, big_col = divmod(small_board, 3)
         small_row, small_col = divmod(small_position, 3)
         return (big_board, (big_row * 3) + small_row, (big_col * 3) + small_col)
-    def get_heuristic(self, cells):
-        ans = -10000000
-        for cell in cells:
-            ans = max(ans, self.P_big[self.who - 1][self.big_state[cell[0]]])
-        return ans*9
+    def get_heuristic(self):
+        ans = -100000
+        patterns = []
+        for i in xrange(3):
+            patterns.append([i*3, i*3 +1, i*3 + 2])
+            patterns.append([i, i + 3, i + 6])
+        patterns.append([0, 4, 8])
+        patterns.append([2, 4, 6])
+        min_distance = 1000000
+        for pattern in patterns:
+            ans = max(ans, self.P[self.who - 1][self.board[0][pattern[0]]] + self.P[self.who - 1][self.board[0][pattern[1]]] + self.P[self.who - 1][self.board[0][pattern[2]]])
+            ans = max(ans, self.P[self.who - 1][self.board[1][pattern[0]]] + self.P[self.who - 1][self.board[1][pattern[1]]] + self.P[self.who - 1][self.board[1][pattern[2]]])
+        return ans
     def find_valid_cells(self, direction):
         moves = []
         first_board = self.board[0][direction]
@@ -269,7 +277,7 @@ class Bot:
         # TODO: Check if the game ends (Terminal state)
         cells = self.find_valid_cells(direction)
         if depth <= 0:
-            return self.get_heuristic(cells), (-1, -1, -1)
+            return self.get_heuristic(), (-1, -1, -1)
         if self.flag == self.who:
             # We are the max player
             max_value = -10000000
