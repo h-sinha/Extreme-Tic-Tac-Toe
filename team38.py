@@ -108,7 +108,7 @@ class Bot:
             state, value = divmod(state, 3)
             if value == flag:
                 sum_of_position_weights += self.position_weight[i]
-        return (50 * A_0) + (10 * A_1) + (25 * B_0) + (5 * B_1) + sum_of_position_weights
+        return (50 * A_0) + (10 * A_1) - (25 * B_0) - (5 * B_1) + sum_of_position_weights
     # Returns P for big board
     def find_P_big(self, state, flag):
         #Not tested, tread with caution!
@@ -118,7 +118,7 @@ class Bot:
             state, value = divmod(state, 4)
             if value == flag:
                 sum_of_position_weights += self.position_weight[i]
-        return (50 * A_0) + (10 * A_1) + (25 * B_0) + (5 * B_1) + sum_of_position_weights
+        return (50 * A_0) + (10 * A_1) - (25 * B_0) - (5 * B_1) + sum_of_position_weights
     # Returns true if board is abandoned else False
     # Abandoned => Won, Draw
     def find_if_abandon(self, state):
@@ -384,6 +384,10 @@ class Bot:
                                     return value, big_board_to_play, move_to_play, direction_to_play
         return value, big_board_to_play, move_to_play, direction_to_play
     def ai_move(self, direction, flag):
-        self.flag = flag
-        _, big_board, move, direction = self.minimax(-1000000, 1000000, 6, direction)
+        cur_time = time.time()
+        max_depth = 5
+        while time.time() - cur_time < 20:
+            self.flag = flag
+            max_depth += 1
+            _, big_board, move, direction = self.minimax(-1000000, 1000000, max_depth, direction)
         return big_board, direction, move
