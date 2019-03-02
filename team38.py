@@ -14,6 +14,15 @@ class Bot:
         self.bonus = False
         self.who = -1
         self.flag = -1
+        self.patterns = []
+        self.patterns.append([0, 1, 2, 1])
+        self.patterns.append([3, 4, 5, 2])
+        self.patterns.append([6, 7, 8, 1])
+        self.patterns.append([0, 3, 6, 1])
+        self.patterns.append([1, 4, 7, 2])
+        self.patterns.append([2, 5, 8, 1])
+        self.patterns.append([0, 4, 8, 3])
+        self.patterns.append([2, 4, 6, 3])
         return
     # Finds all possible moves and return in the for of 3^cell_number
     def find_available_moves(self, state, flag):
@@ -112,7 +121,7 @@ class Bot:
             state, value = divmod(state, 3)
             if value == flag:
                 sum_of_position_weights += self.position_weight[i]
-        return (50 * A_0) + (10 * A_1) - (25 * B_0) - (5 * B_1) + sum_of_position_weights
+        return (50 * A_0) + (10 * A_1) - (75 * B_0) - (5 * B_1) + sum_of_position_weights
     # Returns P for big board
     def find_P_big(self, state, flag):
         #Not tested, tread with caution!
@@ -241,16 +250,10 @@ class Bot:
         return (big_board, (big_row * 3) + small_row, (big_col * 3) + small_col)
     def get_heuristic(self):
         ans = -100000
-        patterns = []
-        for i in xrange(3):
-            patterns.append([i*3, i*3 +1, i*3 + 2])
-            patterns.append([i, i + 3, i + 6])
-        patterns.append([0, 4, 8])
-        patterns.append([2, 4, 6])
         min_distance = 1000000
-        for pattern in patterns:
-            ans = max(ans, self.P[self.who - 1][self.board[0][pattern[0]]] + self.P[self.who - 1][self.board[0][pattern[1]]] + self.P[self.who - 1][self.board[0][pattern[2]]])
-            ans = max(ans, self.P[self.who - 1][self.board[1][pattern[0]]] + self.P[self.who - 1][self.board[1][pattern[1]]] + self.P[self.who - 1][self.board[1][pattern[2]]])
+        for pattern in self.patterns:
+            ans = max(ans, self.pattern[3]*(self.P[self.who - 1][self.board[0][self.pattern[0]]] + self.P[self.who - 1][self.board[0][self.pattern[1]]] + self.P[self.who - 1][self.board[0][self.pattern[2]]]))
+            ans = max(ans, self.pattern[3]*(self.P[self.who - 1][self.board[1][self.pattern[0]]] + self.P[self.who - 1][self.board[1][self.pattern[1]]] + self.P[self.who - 1][self.board[1][self.pattern[2]]]))
         return ans
     def find_valid_cells(self, direction):
         moves = []
@@ -324,5 +327,5 @@ class Bot:
     def ai_move(self, direction, flag):
         self.who = flag
         self.flag = flag
-        _, best_move = self.minimax(-1000000, 1000000, 5, direction)
+        _, best_move = self.minimax(-1000000, 1000000, 7, direction)
         return best_move
