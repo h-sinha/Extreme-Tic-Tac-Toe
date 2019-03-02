@@ -10,7 +10,7 @@ class Bot:
         self.distance = [(int(-1), int(-1)) for i in xrange(19683)]
         for i in xrange(19683):
             self.find_distance(i)
-        self.big_distance = [(int(-1), int(-1)) for i in xrange(262144)]
+        # self.big_distance = [(int(-1), int(-1)) for i in xrange(262144)]
         self.board = [[int(0) for i in xrange(9)] for j in xrange(2)]
         self.big_state = [int(0), int(0)]
         self.bonus = False
@@ -106,28 +106,6 @@ class Bot:
                 a[x + 2] += 1
         return
     def find_distance(self, state):
-        # Returns pair  of shortest distance to victory for player 1, player 2
-        if self.big_distance[state] != (-1, -1):
-            return self.big_distance[state]
-        distance_player1 = 100000
-        distance_player2 = 100000
-        status = self.is_abandon[state]
-        if status == 1:
-            distance_player1 = 0
-            #distance_player2 = 100000 Infinity as the second player can never get this board back
-        elif status == 2:
-            #distance_player1 = 100000 Infinity as the first player can never get this board back
-            distance_player2 = 0
-        elif status == 0:
-            for move in self.available_moves[0][state]:
-                dist,_ = self.find_distance(state + move)
-                distance_player1 = min(distance_player1, dist+1)
-            for move in self.available_moves[1][state]:
-                _, dist = self.find_distance(state + move)
-                distance_player2 = min(distance_player2, dist+1)
-        self.distance[state] = (distance_player1, distance_player2)
-        return self.distance[state]
-    def find_distance_big(self, state):
         # Returns pair  of shortest distance to victory for player 1, player 2
         if self.distance[state] != (-1, -1):
             return self.distance[state]
@@ -280,14 +258,23 @@ class Bot:
             if value != 0:
                 small_position = i
                 break
+
         big_row, big_col = divmod(small_board, 3)
         small_row, small_col = divmod(small_position, 3)
+        print big_board, small_board, move
         return (big_board, (big_row * 3) + small_row, (big_col * 3) + small_col)
-    def get_heuristic(self, cells):
-        ans = 100000
-        for cell in cells:
-            ans = min(ans, self.distance[cell[2]][self.flag-1])
-        return ans
+    def get_heuristic(self):
+        patterns = []
+        for i in xrange(3):
+            patterns.append([i*3, i*3 +1, i*3 + 2])
+            patterns.append([i, i + 3, i + 6])
+        patterns.append([0, 4, 8])
+        patterns.append([2, 4, 6])
+        min_distance = 1000000
+        for pattern in patterns:
+            min_distance = min(min_distance, self.distance[self.board[0][pattern[0]]][self.flag - 1] + self.distance[self.board[0][pattern[1]]][self.flag - 1] + self.distance[self.board[0][pattern[2]]][self.flag - 1])
+            min_distance = min(min_distance, self.distance[self.board[1][pattern[0]]][self.flag - 1] + self.distance[self.board[1][pattern[1]]][self.flag - 1] + self.distance[self.board[1][pattern[2]]][self.flag - 1])
+        return 2*min_distance
     def find_valid_cells(self, direction):
         moves = []
         first_board = self.board[0][direction]
@@ -313,9 +300,9 @@ class Bot:
         # TODO: Check if the game ends (Terminal state)
         cells = self.find_valid_cells(direction)
         if depth <= 0:
-            return self.get_heuristic(cells), (-1, -1, -1)
+            return self.get_heuristic(), (-1, -1, -1)
         # We are the max player
-        max_value = 100000
+        max_value = -100000
         best_move = (-1, -1, -1)
         for cell in cells:
             for move in self.available_moves[self.flag - 1][cell[2]]:
@@ -326,7 +313,7 @@ class Bot:
                 self.undo_move(cell[0], cell[1], move, bonus_transition)
                 self.bonus = tmp_bonus
                 # print value
-                if value - self.distance[cell[2] + move][self.flag - 1] > max_value:
+                if value - 3*self.distance[cell[2] + move][self.flag - 1] > max_value:
                     max_value = value
                     best_move = (cell[0], cell[1], move)
         return max_value, best_move
