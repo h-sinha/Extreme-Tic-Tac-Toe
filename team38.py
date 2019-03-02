@@ -112,7 +112,7 @@ class Bot:
             state, value = divmod(state, 3)
             if value == flag:
                 sum_of_position_weights += self.position_weight[i]
-        return (50 * A_0) + (10 * A_1) + (25 * B_0) + (5 * B_1) + sum_of_position_weights
+        return (50 * A_0) + (10 * A_1) + (25 * B_0) + (5 * B_1)
     # Returns P for big board
     def find_P_big(self, state, flag):
         #Not tested, tread with caution!
@@ -122,7 +122,7 @@ class Bot:
             state, value = divmod(state, 4)
             if value == flag:
                 sum_of_position_weights += self.position_weight[i]
-        return (50 * A_0) + (10 * A_1) + (25 * B_0) + (5 * B_1) + sum_of_position_weights
+        return (50 * A_0) + (10 * A_1) + (25 * B_0) + (5 * B_1)
     # Returns true if board is abandoned else False
     # Abandoned => Won, Draw
     def find_if_abandon(self, state):
@@ -154,7 +154,7 @@ class Bot:
         state = self.board[board][direction]
         if self.is_abandon[state] != 0:
             m = self.is_abandon[state]
-            if not self.bonus and m == self.flag:
+            if not self.bonus and m == self.00flag:
                 self.bonus = True
             for i in xrange(9):
                 if i == direction:
@@ -240,10 +240,10 @@ class Bot:
         small_row, small_col = divmod(small_position, 3)
         return (big_board, (big_row * 3) + small_row, (big_col * 3) + small_col)
     def get_heuristic(self, cells):
-        ans = -10000000
+        ans = -100000
         for cell in cells:
-            ans = max(ans, self.P_big[self.who - 1][self.big_state[cell[0]]]*self.P[self.who - 1][self.board[cell[0]][cell[1]]])
-        return ans*9
+            ans = max(ans, (9*self.P_big[self.who - 1][self.big_state[cell[0]]])+self.P[self.who - 1][self.board[cell[0]][cell[1]]])
+        return ans
     def find_valid_cells(self, direction):
         moves = []
         first_board = self.board[0][direction]
@@ -272,30 +272,15 @@ class Bot:
             return self.get_heuristic(cells), (-1, -1, -1)
         if self.flag == self.who:
             # We are the max player
-            max_value = -10000000
+            max_value = -100000
             best_move = (-1, -1, -1)
             for cell in cells:
                 for move in self.available_moves[self.flag - 1][cell[2]]:
                     # Cell = (board, direction, state)
-                    tmp_board = deepcopy(self.board)
-                    tmp_big_state = deepcopy(self.big_state)
                     tmp_bonus = self.bonus
                     new_direction, bonus_transition = self.make_move(cell[0], cell[1], move)
                     value, _ = self.minimax(alpha, beta, depth - 1, new_direction)
-                    # value += self.P[self.who - 1][self.board[cell[0]][cell[1]]]
                     self.undo_move(cell[0], cell[1], move, bonus_transition)
-                    # if tmp_bonus != self.bonus:
-                    #     print "ERROR, bonus"
-                    #     exit(1)
-                    for i in xrange(2):
-                        for j in xrange(9):
-                            if tmp_board[i][j] != self.board[i][j]:
-                                print "ERROR, board state", i, j
-                                exit(1)
-                    for i in xrange(2):
-                        if tmp_big_state[i] != self.big_state[i]:
-                            print "ERROR, big state", i
-                            exit(1)
                     self.bonus = tmp_bonus
                     if value > max_value:
                         max_value = value
@@ -307,13 +292,12 @@ class Bot:
             return max_value, best_move
         else:
             # We are the min player
-            min_value = 10000000
+            min_value = 100000
             best_move = (-1, -1, -1)
             for cell in cells:
                 for move in self.available_moves[self.flag - 1][cell[2]]:
                     new_direction, bonus_transition = self.make_move(cell[0], cell[1], move)
                     value, _ = self.minimax(alpha, beta, depth - 1, new_direction)
-                    # value -= self.P[self.who - 1][self.board[cell[0]][cell[1]]]
                     self.undo_move(cell[0], cell[1], move, bonus_transition)
                     if value < min_value:
                         min_value = value
@@ -326,7 +310,7 @@ class Bot:
     def ai_move(self, direction, flag):
         self.who = flag
         self.flag = flag
-        _, best_move = self.minimax(-1000000, 1000000, 5, direction)
+        _, best_move = self.minimax(-100000, 100000, 5, direction)
         return best_move
 # test =Bot()
 # print test.find_big_pattern(160097, 1)
