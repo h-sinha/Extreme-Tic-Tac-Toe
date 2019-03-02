@@ -10,6 +10,7 @@ class Bot:
         self.distance = [(int(-1), int(-1)) for i in xrange(19683)]
         for i in xrange(19683):
             self.find_distance(i)
+        self.big_distance = [(int(-1), int(-1)) for i in xrange(262144)]
         self.board = [[int(0) for i in xrange(9)] for j in xrange(2)]
         self.big_state = [int(0), int(0)]
         self.bonus = False
@@ -105,6 +106,28 @@ class Bot:
                 a[x + 2] += 1
         return
     def find_distance(self, state):
+        # Returns pair  of shortest distance to victory for player 1, player 2
+        if self.big_distance[state] != (-1, -1):
+            return self.big_distance[state]
+        distance_player1 = 100000
+        distance_player2 = 100000
+        status = self.is_abandon[state]
+        if status == 1:
+            distance_player1 = 0
+            #distance_player2 = 100000 Infinity as the second player can never get this board back
+        elif status == 2:
+            #distance_player1 = 100000 Infinity as the first player can never get this board back
+            distance_player2 = 0
+        elif status == 0:
+            for move in self.available_moves[0][state]:
+                dist,_ = self.find_distance(state + move)
+                distance_player1 = min(distance_player1, dist+1)
+            for move in self.available_moves[1][state]:
+                _, dist = self.find_distance(state + move)
+                distance_player2 = min(distance_player2, dist+1)
+        self.distance[state] = (distance_player1, distance_player2)
+        return self.distance[state]
+    def find_distance_big(self, state):
         # Returns pair  of shortest distance to victory for player 1, player 2
         if self.distance[state] != (-1, -1):
             return self.distance[state]
@@ -292,7 +315,7 @@ class Bot:
         if depth <= 0:
             return self.get_heuristic(cells), (-1, -1, -1)
         # We are the max player
-        min_value = 100000
+        max_value = 100000
         best_move = (-1, -1, -1)
         for cell in cells:
             for move in self.available_moves[self.flag - 1][cell[2]]:
@@ -303,10 +326,10 @@ class Bot:
                 self.undo_move(cell[0], cell[1], move, bonus_transition)
                 self.bonus = tmp_bonus
                 # print value
-                if value < min_value:
-                    min_value = value
+                if value - self.distance[cell[2] + move][self.flag - 1] > max_value:
+                    max_value = value
                     best_move = (cell[0], cell[1], move)
-        return min_value, best_move
+        return max_value, best_move
     def ai_move(self, direction, flag):
         self.who = flag
         self.flag = flag
