@@ -18,7 +18,7 @@ import copy
 import traceback
 from team38 import Bot as My_Bot
 from team11 import Team11 as Vaibhav_Bot
-# from Team73_2 import Team_73 as Rand_Player
+from Team73_2 import Team_73 as Tatti_Bot
 
 TIME = 24
 MAX_PTS = 86
@@ -366,7 +366,7 @@ if __name__ == '__main__':
 	obj2 = ''
 	option = sys.argv[1]	
 	if option == '1':
-		obj1 = Vaibhav_Bot()
+		obj1 = Tatti_Bot()
 		obj2 = My_Bot()
 
 	elif option == '2':

@@ -148,6 +148,25 @@ class Bot:
             if mark == 0:
                 return 0
         return 3
+      # Abandoned => Won, Draw
+    def find_if_abandon_big(self, state):
+        parse_board = []
+        for _ in xrange(9):
+            state, value = divmod(state, 4)
+            parse_board.append(value)
+        patterns = []
+        for i in xrange(3):
+            patterns.append([i*3, i*3 +1, i*3 + 2])
+            patterns.append([i, i + 3, i + 6])
+        patterns.append([0, 4, 8])
+        patterns.append([2, 4, 6])
+        a = [0, 0, 0, 0]
+        for pattern in patterns:
+            if parse_board[pattern[0]] == parse_board[pattern[1]] and parse_board[pattern[1]] == parse_board[pattern[2]] and parse_board[pattern[0]] == 1:
+                return 1
+            elif parse_board[pattern[0]] == parse_board[pattern[1]] and parse_board[pattern[1]] == parse_board[pattern[2]] and parse_board[pattern[0]] == 2:
+                return 2
+        return 0
     # Update board state based on move
     def make_move(self, board, direction, move):
         #Not tested, tread with caution!
