@@ -242,10 +242,10 @@ class Bot:
         small_row, small_col = divmod(small_position, 3)
         return (big_board, (big_row * 3) + small_row, (big_col * 3) + small_col)
     def get_heuristic(self, cells):
-        ans = -10000000
+        ans = 100000
         for cell in cells:
-            ans = max(ans, self.P_big[self.who - 1][self.big_state[cell[0]]]*self.P[self.who - 1][self.board[cell[0]][cell[1]]])
-        return ans*9
+            ans = min(ans, self.distance[cell[2]][self.flag-1])
+        return ans
     def find_valid_cells(self, direction):
         moves = []
         first_board = self.board[0][direction]
@@ -272,63 +272,26 @@ class Bot:
         cells = self.find_valid_cells(direction)
         if depth <= 0:
             return self.get_heuristic(cells), (-1, -1, -1)
-        if self.flag == self.who:
-            # We are the max player
-            max_value = -10000000
-            best_move = (-1, -1, -1)
-            for cell in cells:
-                for move in self.available_moves[self.flag - 1][cell[2]]:
-                    # Cell = (board, direction, state)
-                    tmp_board = deepcopy(self.board)
-                    tmp_big_state = deepcopy(self.big_state)
-                    tmp_bonus = self.bonus
-                    new_direction, bonus_transition = self.make_move(cell[0], cell[1], move)
-                    value, _ = self.minimax(alpha, beta, depth - 1, new_direction)
-                    # value += self.P[self.who - 1][self.board[cell[0]][cell[1]]]
-                    self.undo_move(cell[0], cell[1], move, bonus_transition)
-                    # if tmp_bonus != self.bonus:
-                    #     print "ERROR, bonus"
-                    #     exit(1)
-                    for i in xrange(2):
-                        for j in xrange(9):
-                            if tmp_board[i][j] != self.board[i][j]:
-                                print "ERROR, board state", i, j
-                                exit(1)
-                    for i in xrange(2):
-                        if tmp_big_state[i] != self.big_state[i]:
-                            print "ERROR, big state", i
-                            exit(1)
-                    self.bonus = tmp_bonus
-                    if value > max_value:
-                        max_value = value
-                        best_move = (cell[0], cell[1], move)
-                    if max_value > alpha:
-                        alpha = max_value
-                    if alpha >= beta:
-                        return max_value, best_move
-            return max_value, best_move
-        else:
-            # We are the min player
-            min_value = 10000000
-            best_move = (-1, -1, -1)
-            for cell in cells:
-                for move in self.available_moves[self.flag - 1][cell[2]]:
-                    new_direction, bonus_transition = self.make_move(cell[0], cell[1], move)
-                    value, _ = self.minimax(alpha, beta, depth - 1, new_direction)
-                    # value -= self.P[self.who - 1][self.board[cell[0]][cell[1]]]
-                    self.undo_move(cell[0], cell[1], move, bonus_transition)
-                    if value < min_value:
-                        min_value = value
-                        best_move = (cell[0], cell[1], move)
-                    if min_value < beta:
-                        beta = min_value
-                    if alpha >= beta:
-                        return min_value, best_move
-            return min_value, best_move
+        # We are the max player
+        min_value = 100000
+        best_move = (-1, -1, -1)
+        for cell in cells:
+            for move in self.available_moves[self.flag - 1][cell[2]]:
+                # Cell = (board, direction, state)
+                tmp_bonus = self.bonus
+                new_direction, bonus_transition = self.make_move(cell[0], cell[1], move)
+                value, _ = self.minimax(alpha, beta, depth - 1, new_direction)
+                self.undo_move(cell[0], cell[1], move, bonus_transition)
+                self.bonus = tmp_bonus
+                # print value
+                if value < min_value:
+                    min_value = value
+                    best_move = (cell[0], cell[1], move)
+        return min_value, best_move
     def ai_move(self, direction, flag):
         self.who = flag
         self.flag = flag
-        _, best_move = self.minimax(-1000000, 1000000, 5, direction)
+        _, best_move = self.minimax(-1000000, 1000000, 4, direction)
         return best_move
-test=Bot()
-print test.find_distance(15436)
+# test=Bot()
+# print test.find_distance(15436)
