@@ -277,26 +277,13 @@ class Bot:
             for cell in cells:
                 for move in self.available_moves[self.flag - 1][cell[2]]:
                     # Cell = (board, direction, state)
-                    tmp_board = deepcopy(self.board)
-                    tmp_big_state = deepcopy(self.big_state)
+                    tmp_flag = self.flag
                     tmp_bonus = self.bonus
                     new_direction, bonus_transition = self.make_move(cell[0], cell[1], move)
                     value, _ = self.minimax(alpha, beta, depth - 1, new_direction)
-                    value += self.P[self.who - 1][self.board[cell[0]][cell[1]]]
                     self.undo_move(cell[0], cell[1], move, bonus_transition)
-                    # if tmp_bonus != self.bonus:
-                    #     print "ERROR, bonus"
-                    #     exit(1)
-                    for i in xrange(2):
-                        for j in xrange(9):
-                            if tmp_board[i][j] != self.board[i][j]:
-                                print "ERROR, board state", i, j
-                                exit(1)
-                    for i in xrange(2):
-                        if tmp_big_state[i] != self.big_state[i]:
-                            print "ERROR, big state", i
-                            exit(1)
                     self.bonus = tmp_bonus
+                    self.flag = tmp_flag
                     if value > max_value:
                         max_value = value
                         best_move = (cell[0], cell[1], move)
@@ -311,10 +298,13 @@ class Bot:
             best_move = (-1, -1, -1)
             for cell in cells:
                 for move in self.available_moves[self.flag - 1][cell[2]]:
+                    tmp_flag = self.flag
+                    tmp_bonus = self.bonus
                     new_direction, bonus_transition = self.make_move(cell[0], cell[1], move)
                     value, _ = self.minimax(alpha, beta, depth - 1, new_direction)
-                    value -= self.P[self.who - 1][self.board[cell[0]][cell[1]]]
                     self.undo_move(cell[0], cell[1], move, bonus_transition)
+                    self.bonus = tmp_bonus
+                    self.flag = tmp_flag
                     if value < min_value:
                         min_value = value
                         best_move = (cell[0], cell[1], move)
