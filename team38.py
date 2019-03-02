@@ -6,9 +6,10 @@ class Bot:
         #Flag => 1 = Max player (X), 2 = Min player (O)
         self.available_moves = [[self.find_available_moves(i, j + 1) for i in xrange(19683)] for j in xrange(2)]
         self.position_weight = [4, 3, 4, 3, 6, 3, 4, 3, 4]
-        self.P = [[self.find_P(i, j + 1) for i in xrange(19683)] for j in xrange(2)]
-        self.P_big = [[self.find_P_big(i, j+1) for i in xrange(262144)] for j in xrange(2)]
         self.is_abandon = [self.find_if_abandon(i) for i in xrange(19683)]
+        self.distance = [(int(-1), int(-1)) for i in xrange(19683)]
+        for i in xrange(19683):
+            self.find_distance(i)
         self.board = [[int(0) for i in xrange(9)] for j in xrange(2)]
         self.big_state = [int(0), int(0)]
         self.bonus = False
@@ -103,27 +104,28 @@ class Bot:
             if player2 == 3 - x and player1 == 0:
                 a[x + 2] += 1
         return
-    # Returns P for small board
-    def find_P(self, state, flag):
-        #Not tested, tread with caution!
-        A_0, A_1, B_0, B_1 = self.find_pattern(state, flag)
-        sum_of_position_weights = int(0)
-        for i in xrange(9):
-            state, value = divmod(state, 3)
-            if value == flag:
-                sum_of_position_weights += self.position_weight[i]
-        return (50 * A_0) + (10 * A_1) + (25 * B_0) + (5 * B_1) + sum_of_position_weights
-    # Returns P for big board
-    def find_P_big(self, state, flag):
-        #Not tested, tread with caution!
-        A_0, A_1, B_0, B_1 = self.find_big_pattern(state, flag)
-        sum_of_position_weights = int(0)
-        for i in xrange(9):
-            state, value = divmod(state, 4)
-            if value == flag:
-                sum_of_position_weights += self.position_weight[i]
-        return (50 * A_0) + (10 * A_1) + (25 * B_0) + (5 * B_1) + sum_of_position_weights
-    # Returns true if board is abandoned else False
+    def find_distance(self, state):
+        # Returns pair  of shortest distance to victory for player 1, player 2
+        if self.distance[state] != (-1, -1):
+            return self.distance[state]
+        distance_player1 = 100000
+        distance_player2 = 100000
+        status = self.is_abandon[state]
+        if status == 1:
+            distance_player1 = 0
+            #distance_player2 = 100000 Infinity as the second player can never get this board back
+        elif status == 2:
+            #distance_player1 = 100000 Infinity as the first player can never get this board back
+            distance_player2 = 0
+        elif status == 0:
+            for move in self.available_moves[0][state]:
+                dist,_ = self.find_distance(state + move)
+                distance_player1 = min(distance_player1, dist+1)
+            for move in self.available_moves[1][state]:
+                _, dist = self.find_distance(state + move)
+                distance_player2 = min(distance_player2, dist+1)
+        self.distance[state] = (distance_player1, distance_player2)
+        return self.distance[state]
     # Abandoned => Won, Draw
     def find_if_abandon(self, state):
         parse_board = []
@@ -328,5 +330,5 @@ class Bot:
         self.flag = flag
         _, best_move = self.minimax(-1000000, 1000000, 5, direction)
         return best_move
-# test =Bot()
-# print test.find_big_pattern(160097, 1)
+test=Bot()
+print test.find_distance(15436)
