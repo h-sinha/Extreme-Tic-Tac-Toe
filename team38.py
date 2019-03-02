@@ -242,7 +242,7 @@ class Bot:
     def get_heuristic(self, cells):
         ans = -10000000
         for cell in cells:
-            ans = max(ans, self.P_big[self.who - 1][self.big_state[cell[0]]])
+            ans = max(ans, self.P_big[self.who - 1][self.big_state[cell[0]]]*self.P[self.who - 1][self.board[cell[0]][cell[1]]])
         return ans*9
     def find_valid_cells(self, direction):
         moves = []
@@ -282,7 +282,7 @@ class Bot:
                     tmp_bonus = self.bonus
                     new_direction, bonus_transition = self.make_move(cell[0], cell[1], move)
                     value, _ = self.minimax(alpha, beta, depth - 1, new_direction)
-                    value += self.P[self.who - 1][self.board[cell[0]][cell[1]]]
+                    # value += self.P[self.who - 1][self.board[cell[0]][cell[1]]]
                     self.undo_move(cell[0], cell[1], move, bonus_transition)
                     # if tmp_bonus != self.bonus:
                     #     print "ERROR, bonus"
@@ -313,7 +313,7 @@ class Bot:
                 for move in self.available_moves[self.flag - 1][cell[2]]:
                     new_direction, bonus_transition = self.make_move(cell[0], cell[1], move)
                     value, _ = self.minimax(alpha, beta, depth - 1, new_direction)
-                    value -= self.P[self.who - 1][self.board[cell[0]][cell[1]]]
+                    # value -= self.P[self.who - 1][self.board[cell[0]][cell[1]]]
                     self.undo_move(cell[0], cell[1], move, bonus_transition)
                     if value < min_value:
                         min_value = value
@@ -328,3 +328,5 @@ class Bot:
         self.flag = flag
         _, best_move = self.minimax(-1000000, 1000000, 5, direction)
         return best_move
+# test =Bot()
+# print test.find_big_pattern(160097, 1)
