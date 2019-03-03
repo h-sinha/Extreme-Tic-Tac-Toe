@@ -366,7 +366,7 @@ if __name__ == '__main__':
 	option = sys.argv[1]	
 	if option == '1':
 		obj1 = My_Bot()
-		obj2 = Tatti_Bot()
+		obj2 = Random_Player()
 
 	elif option == '2':
 		obj1 = Random_Player()

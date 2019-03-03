@@ -6,7 +6,8 @@ class Bot:
     def __init__(self):
         #Flag => 1 = Max player (X), 2 = Min player (O)
         self.available_moves = [[self.find_available_moves(i, j + 1) for i in xrange(19683)] for j in xrange(2)]
-        self.position_weight = [4, 3, 4, 3, 6, 3, 4, 3, 4]
+        self.position_weight_small = [3, 3, 4, 3, 6, 3, 4, 3, 4]
+        self.position_weight_big = [4, 3, 4, 3, 6, 3, 4, 3, 4]
         self.P = [[self.find_P(i, j + 1) for i in xrange(19683)] for j in xrange(2)]
         self.P_big = [[self.find_P_big(i, j+1) for i in xrange(262144)] for j in xrange(2)]
         self.is_abandon = [self.find_if_abandon(i) for i in xrange(19683)]
@@ -123,8 +124,10 @@ class Bot:
         for i in xrange(9):
             state, value = divmod(state, 3)
             if value == flag:
-                sum_of_position_weights += self.position_weight[i]
-        return (180 * A_0) + (20 * A_1) - (90 * B_0) - (10 * B_1) + sum_of_position_weights
+                sum_of_position_weights += self.position_weight_small[i]
+            if value == 3 - flag:
+                sum_of_position_weights -= self.position_weight_small[i]
+        return (90 * A_0) + (20 * A_1) - (135 * B_0) - (30 * B_1) + sum_of_position_weights
     # Returns P for big board
     def find_P_big(self, state, flag):
         #Not tested, tread with caution!
@@ -133,8 +136,10 @@ class Bot:
         for i in xrange(9):
             state, value = divmod(state, 4)
             if value == flag:
-                sum_of_position_weights += self.position_weight[i]
-        return (50 * A_0) + (10 * A_1) - (25 * B_0) - (15 * B_1) + sum_of_position_weights
+                sum_of_position_weights += self.position_weight_big[i]
+            if value == 3 - flag:
+                sum_of_position_weights -= self.position_weight_big[i]
+        return (90 * A_0) + (20 * A_1) - (135 * B_0) - (30 * B_1) + sum_of_position_weights
     # Returns true if board is abandoned else False
     # Abandoned => Won, Draw
     def find_if_abandon(self, state):
@@ -199,7 +204,7 @@ class Bot:
             if self.bonus == True:
                 self.bonus = False
                 bonus_transition = True
-        # print "Make move:", board, direction, move, "Bonus:", self.bonus, "Transition:", "True" if bonus_transition else "False", "New flag:", self.flag
+        print "Make move:", board, direction, move, "Bonus:", self.bonus, "Transition:", "True" if bonus_transition else "False", "New flag:", self.flag
         for i in xrange(9):
             move, value = divmod(move, 3)
             if value != 0:
@@ -223,7 +228,7 @@ class Bot:
             self.bonus = True
         else:
             self.bonus = False
-        # print "Undo move:", board, direction, move, "Bonus:", self.bonus, "Transition:", "True" if bonus_transition else "False", "New flag:", self.flag
+        print "Undo move:", board, direction, move, "Bonus:", self.bonus, "Transition:", "True" if bonus_transition else "False", "New flag:", self.flag
         return
     # Updates board state and returns next move to simulator
     def move(self, board, old_move, flag):
@@ -261,7 +266,13 @@ class Bot:
             #First move if we get the chance
             return (0,4,4)
         else:
-            print old_move
+            print old_move, "OUR MOVE"
+            for j in xrange(2):
+                print "Board", j+1, ":", self.P_big[self.who - 1][self.big_state[0]]
+                for row in xrange(3):
+                    for col in xrange(3):
+                        print self.P[self.who-1][self.board[j][(3 * row) + col]], "\t",
+                    print "" 
             big_board, small_board, move = self.ai_move((3 * (old_move[1]%3)) + (old_move[2]%3), 1 if flag == 'x' else 2)
         small_position = -1
         for i in xrange(9):
@@ -331,8 +342,8 @@ class Bot:
                         best_move = (cell[0], cell[1], move)
                     if max_value > alpha:
                         alpha = max_value
-                    if alpha >= beta:
-                        return max_value, best_move
+                    # if alpha >= beta:
+                    #     return max_value, best_move
             return max_value, best_move
         else:
             # We are the min player
@@ -352,8 +363,8 @@ class Bot:
                         best_move = (cell[0], cell[1], move)
                     if min_value < beta:
                         beta = min_value
-                    if alpha >= beta:
-                        return min_value, best_move
+                    # if alpha >= beta:
+                    #     return min_value, best_move
             return min_value, best_move
     def ai_move(self, direction, flag):
         max_depth = 5
