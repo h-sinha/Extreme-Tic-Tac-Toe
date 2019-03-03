@@ -17,7 +17,7 @@ import time
 import copy
 import traceback
 from team38 import Bot as My_Bot
-from team11 import Team11 as Vaibhav_Bot
+from team38_wt import Bot as Wt_Bot
 # from Team73_2 import Team_73 as Rand_Player
 
 TIME = 24
@@ -366,8 +366,8 @@ if __name__ == '__main__':
 	obj2 = ''
 	option = sys.argv[1]	
 	if option == '1':
-		obj1 = Vaibhav_Bot()
-		obj2 = My_Bot()
+		obj1 = My_Bot()
+		obj2 = Wt_Bot()
 
 	elif option == '2':
 		obj1 = Random_Player()
