@@ -186,7 +186,6 @@ class Bot:
     # Update board state based on move
     def make_move(self, board, direction, move):
         #Not tested, tread with caution!
-        bonus_transition = False
         self.board[board][direction] += move
         state = self.board[board][direction]
         if self.is_abandon[state] != 0:
@@ -197,6 +196,7 @@ class Bot:
                     break
                 m *= 4
         # print "Make move:", board, direction, move, "Bonus:", self.bonus, "Transition:", "True" if bonus_transition else "False", "New flag:", self.flag
+        direction = -1
         for i in xrange(9):
             move, value = divmod(move, 3)
             if value != 0:
