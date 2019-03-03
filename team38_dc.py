@@ -306,7 +306,7 @@ class Bot:
         elif self.big_abandon[self.big_state[0]] == 3 - self.who or self.big_abandon[self.big_state[1]] == 3 - self.who:
             return - 100000, (-1, -1, -1)
         elif self.big_abandon[self.big_state[0]] == 3 and self.big_abandon[self.big_state[1]] == 3:
-            return 100, (-1, -1, -1)  #Actually should return points
+            return 0, (-1, -1, -1)  #Actually should return points
         cells = self.find_valid_cells(direction)
         if depth <= 0:
             return self.get_heuristic(), (-1, -1, -1)
@@ -362,7 +362,7 @@ class Bot:
                         return min_value, best_move
             return min_value, best_move
     def ai_move(self, direction, flag, bonus):
-        max_depth = 5
+        max_depth = 4
         self.start_time = time.time()
         # while time.time() - self.start_time <= 20:
         self.who = flag

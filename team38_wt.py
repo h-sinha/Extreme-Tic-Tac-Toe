@@ -6,7 +6,7 @@ class Bot:
     def __init__(self):
         #Flag => 1 = Max player (X), 2 = Min player (O)
         self.available_moves = [[self.find_available_moves(i, j + 1) for i in xrange(19683)] for j in xrange(2)]
-        self.position_weight_small = [4, 3, 4, 3, 6, 3, 4, 3, 4]
+        self.position_weight_small = [3, 4, 3, 3, 6, 3, 4, 3, 4]
         self.position_weight_big = [4, 3, 4, 3, 6, 3, 4, 3, 4]
         self.P = [[self.find_P(i, j + 1) for i in xrange(19683)] for j in xrange(2)]
         self.P_big = [[self.find_P_big(i, j+1) for i in xrange(262144)] for j in xrange(2)]
@@ -17,14 +17,14 @@ class Bot:
         self.who = -1
         self.patterns = []
         self.start_time = 0
-        self.patterns.append([0, 1, 2, 4])
-        self.patterns.append([3, 4, 5, 5])
-        self.patterns.append([6, 7, 8, 4])
-        self.patterns.append([0, 3, 6, 4])
-        self.patterns.append([1, 4, 7, 5])
-        self.patterns.append([2, 5, 8, 4])
-        self.patterns.append([0, 4, 8, 6])
-        self.patterns.append([2, 4, 6, 6])
+        self.patterns.append([0, 1, 2, 1])
+        self.patterns.append([3, 4, 5, 1])
+        self.patterns.append([6, 7, 8, 1])
+        self.patterns.append([0, 3, 6, 1])
+        self.patterns.append([1, 4, 7, 1])
+        self.patterns.append([2, 5, 8, 1])
+        self.patterns.append([0, 4, 8, 1])
+        self.patterns.append([2, 4, 6, 1])
         return
     # Finds all possible moves and return in the for of 3^cell_number
     def find_available_moves(self, state, flag):
@@ -122,10 +122,10 @@ class Bot:
         for i in xrange(9):
             state, value = divmod(state, 3)
             if value == flag:
-                sum_of_position_weights += 2*self.position_weight_small[i]
+                sum_of_position_weights += self.position_weight_small[i]
             if value == 3 - flag:
-                sum_of_position_weights -= 3*self.position_weight_small[i]
-        return (200 * A_0) + (20 * A_1) - (300 * B_0) - (30 * B_1) + sum_of_position_weights
+                sum_of_position_weights -= self.position_weight_small[i]
+        return (90 * A_0) + (20 * A_1) - (135 * B_0) - (30 * B_1) + sum_of_position_weights
     # Returns P for big board
     def find_P_big(self, state, flag):
         #Not tested, tread with caution!
@@ -325,16 +325,11 @@ class Bot:
                     else:
                         value, _ = self.minimax(alpha, beta, depth - 1, new_direction, 3 - flag, False)
                     self.undo_move(cell[0], cell[1], move)
-                    # if depth == 6:
-                        # print "lqudqa",move, value
-                    # self.board = deepcopy(self.board)
-                    # self.big_state = deepcopy(self.big_state)
                     if value >= max_value:
                         max_value = value
                         best_move = (cell[0], cell[1], move)
                     if max_value >= alpha:
                         alpha = max_value
-                    # if alpha >= beta or time.time() - self.start_time >= 22:
                     if alpha >= beta or time.time() - self.start_time >= 23:
                         return max_value, best_move
             return max_value, best_move
@@ -344,16 +339,12 @@ class Bot:
             best_move = (-1, -1, -1)
             for cell in cells:
                 for move in self.available_moves[flag - 1][cell[2]]:
-                    # tmp_board = deepcopy(self.board)
-                    # tmp_big_state = deepcopy(self.big_state)
                     new_direction = self.make_move(cell[0], cell[1], move)
                     if self.is_abandon[self.board[cell[0]][cell[1]]] == flag and not bonus:
                         value, _ = self.minimax(alpha, beta, depth - 1, new_direction, flag, True)
                     else:
                         value, _ = self.minimax(alpha, beta, depth - 1, new_direction, 3 - flag, False)
                     self.undo_move(cell[0], cell[1], move)
-                    # self.board = deepcopy(self.board)
-                    # self.big_state = deepcopy(self.big_state)
                     if value <= min_value:
                         min_value = value
                         best_move = (cell[0], cell[1], move)
@@ -361,7 +352,6 @@ class Bot:
                         beta = min_value
                     if alpha >= beta or time.time() - self.start_time >= 23:
                         return min_value, best_move
-                    # if alpha >= beta or time.time() - self.start_time >= 22:
             return min_value, best_move
     def ai_move(self, direction, flag, bonus):
         max_depth = 4
