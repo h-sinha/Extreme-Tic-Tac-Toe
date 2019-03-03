@@ -253,8 +253,8 @@ class Bot:
     def get_heuristic(self):
         ans = -100000
         for pattern in self.patterns:
-            ans = max(ans, self.P_big[self.flag-1][self.big_state[0]]+pattern[3]*(self.P[self.who - 1][self.board[0][pattern[0]]] + self.P[self.who - 1][self.board[0][pattern[1]]] + self.P[self.who - 1][self.board[0][pattern[2]]]))
-            ans = max(ans, self.P_big[self.flag-1][self.big_state[0]]+pattern[3]*(self.P[self.who - 1][self.board[1][pattern[0]]] + self.P[self.who - 1][self.board[1][pattern[1]]] + self.P[self.who - 1][self.board[1][pattern[2]]]))
+            ans = max(ans, pattern[3]*(self.P[self.who - 1][self.board[0][pattern[0]]] + self.P[self.who - 1][self.board[0][pattern[1]]] + self.P[self.who - 1][self.board[0][pattern[2]]]))
+            ans = max(ans, pattern[3]*(self.P[self.who - 1][self.board[1][pattern[0]]] + self.P[self.who - 1][self.board[1][pattern[1]]] + self.P[self.who - 1][self.board[1][pattern[2]]]))
         return ans
     def find_valid_cells(self, direction):
         moves = []
