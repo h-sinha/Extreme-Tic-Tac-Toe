@@ -16,7 +16,7 @@ import signal
 import time
 import copy
 import traceback
-from team38_big import Bot as Big_Bot
+from team38 import Bot as My_Bot
 from Team73_4 import Team_73 as Tatti_Bot
 
 TIME = 24
@@ -365,7 +365,7 @@ if __name__ == '__main__':
 	obj2 = ''
 	option = sys.argv[1]	
 	if option == '1':
-		obj1 = Big_Bot()
+		obj1 = My_Bot()
 		obj2 = Tatti_Bot()
 
 	elif option == '2':
