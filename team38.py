@@ -298,8 +298,8 @@ class Bot:
         return moves
     def minimax(self, alpha, beta, depth, direction, flag, bonus):
         # TODO: Check if the game ends (Terminal state)
-        if time.time() - self.start_time >= 20:
-            return 100000, (-1, -1, -1)
+        # if time.time() - self.start_time >= 20:
+        #     return 100000, (-1, -1, -1)
         if self.big_abandon[self.big_state[0]] == self.who or self.big_abandon[self.big_state[1]] == self.who:
             return 100000, (-1, -1, -1)
         elif self.big_abandon[self.big_state[0]] == 3 - self.who or self.big_abandon[self.big_state[1]] == 3 - self.who:
@@ -351,12 +351,12 @@ class Bot:
                         return min_value, best_move
             return min_value, best_move
     def ai_move(self, direction, flag, bonus):
-        max_depth = 5
+        max_depth = 4
         self.start_time = time.time()
-        # while time.time() - self.start_time <= 20:
-        self.who = flag
-        max_depth += 1
-        _, best_move_sofar = self.minimax(-1000000, 1000000, max_depth, direction, flag, bonus)
+        while time.time() - self.start_time <= 20:
+            self.who = flag
+            max_depth += 1
+            _, best_move_sofar = self.minimax(-1000000, 1000000, max_depth, direction, flag, bonus)
         if best_move_sofar[0] != -1:
             best_move = best_move_sofar
         return best_move
