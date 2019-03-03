@@ -10,6 +10,7 @@ class Bot:
         self.P = [[self.find_P(i, j + 1) for i in xrange(19683)] for j in xrange(2)]
         self.P_big = [[self.find_P_big(i, j+1) for i in xrange(262144)] for j in xrange(2)]
         self.is_abandon = [self.find_if_abandon(i) for i in xrange(19683)]
+        self.big_abandon = [self.find_big_abandon(i) for i in xrange(262144)]
         self.board = [[int(0) for i in xrange(9)] for j in xrange(2)]
         self.big_state = [int(0), int(0)]
         self.bonus = False
@@ -133,13 +134,34 @@ class Bot:
             state, value = divmod(state, 4)
             if value == flag:
                 sum_of_position_weights += self.position_weight[i]
-        return (50 * A_0) + (10 * A_1) - (25 * B_0) - (15 * B_1) + sum_of_position_weights
+        return (180 * A_0) + (20 * A_1) - (90 * B_0) - (10 * B_1) + sum_of_position_weights
     # Returns true if board is abandoned else False
     # Abandoned => Won, Draw
     def find_if_abandon(self, state):
         parse_board = []
         for _ in xrange(9):
             state, value = divmod(state, 3)
+            parse_board.append(value)
+        patterns = []
+        for i in xrange(3):
+            patterns.append([i*3, i*3 +1, i*3 + 2])
+            patterns.append([i, i + 3, i + 6])
+        patterns.append([0, 4, 8])
+        patterns.append([2, 4, 6])
+        a = [0, 0, 0, 0]
+        for pattern in patterns:
+            if parse_board[pattern[0]] == parse_board[pattern[1]] and parse_board[pattern[1]] == parse_board[pattern[2]] and parse_board[pattern[0]] == 1:
+                return 1
+            elif parse_board[pattern[0]] == parse_board[pattern[1]] and parse_board[pattern[1]] == parse_board[pattern[2]] and parse_board[pattern[0]] == 2:
+                return 2
+        for mark in parse_board:
+            if mark == 0:
+                return 0
+        return 3
+    def find_big_abandon(self, state):
+        parse_board = []
+        for _ in xrange(9):
+            state, value = divmod(state, 4)
             parse_board.append(value)
         patterns = []
         for i in xrange(3):
@@ -253,8 +275,8 @@ class Bot:
     def get_heuristic(self):
         ans = -100000
         for pattern in self.patterns:
-            ans = max(ans, (9*self.P_big[self.flag-1][self.big_state[0]])+pattern[3]*(self.P[self.who - 1][self.board[0][pattern[0]]] + self.P[self.who - 1][self.board[0][pattern[1]]] + self.P[self.who - 1][self.board[0][pattern[2]]]))
-            ans = max(ans, (9*self.P_big[self.flag-1][self.big_state[1]])+pattern[3]*(self.P[self.who - 1][self.board[1][pattern[0]]] + self.P[self.who - 1][self.board[1][pattern[1]]] + self.P[self.who - 1][self.board[1][pattern[2]]]))
+            ans = max(ans, (3*self.P_big[self.flag-1][self.big_state[0]])+pattern[3]*(self.P[self.who - 1][self.board[0][pattern[0]]] + self.P[self.who - 1][self.board[0][pattern[1]]] + self.P[self.who - 1][self.board[0][pattern[2]]]))
+            ans = max(ans, (3*self.P_big[self.flag-1][self.big_state[1]])+pattern[3]*(self.P[self.who - 1][self.board[1][pattern[0]]] + self.P[self.who - 1][self.board[1][pattern[1]]] + self.P[self.who - 1][self.board[1][pattern[2]]]))
         return ans
     def find_valid_cells(self, direction):
         moves = []
@@ -281,6 +303,12 @@ class Bot:
         # TODO: Check if the game ends (Terminal state)
         if time.time() - self.start_time >= 20:
             return 100000, (-1, -1, -1)
+        if self.big_abandon[self.big_state[0]] == self.who or self.big_abandon[self.big_state[1]] == self.who:
+            return 100000, (-1, -1, -1)
+        elif self.big_abandon[self.big_state[0]] == 3 - self.who or self.big_abandon[self.big_state[1]] == 3 - self.who:
+            return - 100000, (-1, -1, -1)
+        elif self.big_abandon[self.big_state[0]] == 3 and self.big_abandon[self.big_state[1]] == 3:
+            return 100, (-1, -1, -1)  #Actually should return points
         cells = self.find_valid_cells(direction)
         if depth <= 0:
             return self.get_heuristic(), (-1, -1, -1)
