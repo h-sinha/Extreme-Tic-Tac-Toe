@@ -356,13 +356,13 @@ class Bot:
                         return min_value, best_move
             return min_value, best_move
     def ai_move(self, direction, flag):
-        max_depth = 5
+        max_depth = 3
         self.start_time = time.time()
-        while time.time() - self.start_time <= 20:
-            self.who = flag
-            self.flag = flag
-            max_depth += 1
-            _, best_move_sofar = self.minimax(-1000000, 1000000, max_depth, direction)
-            if best_move_sofar[0] != -1:
-                best_move = best_move_sofar
+        # while time.time() - self.start_time <= 20:
+        #     self.who = flag
+        #     self.flag = flag
+        #     max_depth += 1
+        _, best_move_sofar = self.minimax(-1000000, 1000000, max_depth, direction)
+        if best_move_sofar[0] != -1:
+            best_move = best_move_sofar
         return best_move

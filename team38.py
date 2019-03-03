@@ -6,7 +6,7 @@ class Bot:
     def __init__(self):
         #Flag => 1 = Max player (X), 2 = Min player (O)
         self.available_moves = [[self.find_available_moves(i, j + 1) for i in xrange(19683)] for j in xrange(2)]
-        self.position_weight_small = [3, 3, 4, 3, 6, 3, 4, 3, 4]
+        self.position_weight_small = [3, 4, 3, 3, 6, 3, 4, 3, 4]
         self.position_weight_big = [4, 3, 4, 3, 6, 3, 4, 3, 4]
         self.P = [[self.find_P(i, j + 1) for i in xrange(19683)] for j in xrange(2)]
         self.P_big = [[self.find_P_big(i, j+1) for i in xrange(262144)] for j in xrange(2)]
@@ -14,7 +14,6 @@ class Bot:
         self.big_abandon = [self.find_big_abandon(i) for i in xrange(262144)]
         self.board = [[int(0) for i in xrange(9)] for j in xrange(2)]
         self.big_state = [int(0), int(0)]
-        self.bonus = False
         self.who = -1
         self.flag = -1
         self.patterns = []
@@ -192,26 +191,19 @@ class Bot:
         state = self.board[board][direction]
         if self.is_abandon[state] != 0:
             m = self.is_abandon[state]
-            if not self.bonus and m == self.flag:
-                self.bonus = True
             for i in xrange(9):
                 if i == direction:
                     self.big_state[board] += m
                     break
                 m *= 4
-        else:
-            self.flag = 3 - self.flag
-            if self.bonus == True:
-                self.bonus = False
-                bonus_transition = True
-        print "Make move:", board, direction, move, "Bonus:", self.bonus, "Transition:", "True" if bonus_transition else "False", "New flag:", self.flag
+        # print "Make move:", board, direction, move, "Bonus:", self.bonus, "Transition:", "True" if bonus_transition else "False", "New flag:", self.flag
         for i in xrange(9):
             move, value = divmod(move, 3)
             if value != 0:
                 direction = i
                 break
-        return direction, bonus_transition
-    def undo_move(self, board, direction, move, bonus_transition):
+        return direction
+    def undo_move(self, board, direction, move):
         #Not tested, tread with caution!
         state = self.board[board][direction]
         if self.is_abandon[self.board[board][direction]] != 0:
@@ -222,13 +214,7 @@ class Bot:
                     break
                 m *= 4
         self.board[board][direction] -= move
-        if not self.bonus:
-            self.flag = 3 - self.flag
-        if bonus_transition:
-            self.bonus = True
-        else:
-            self.bonus = False
-        print "Undo move:", board, direction, move, "Bonus:", self.bonus, "Transition:", "True" if bonus_transition else "False", "New flag:", self.flag
+        # print "Undo move:", board, direction, move, "Bonus:", self.bonus, "Transition:", "True" if bonus_transition else "False", "New flag:", self.flag
         return
     # Updates board state and returns next move to simulator
     def move(self, board, old_move, flag):
@@ -266,14 +252,14 @@ class Bot:
             #First move if we get the chance
             return (0,4,4)
         else:
-            print old_move, "OUR MOVE"
+            print old_move, "OUR MOVE", "Bonus: ", True if board.big_boards_status[old_move[0]][old_move[1]][old_move[2]] == flag else False
             for j in xrange(2):
-                print "Board", j+1, ":", self.P_big[self.who - 1][self.big_state[0]]
+                print "Board", j+1, ":", self.P_big[self.who - 1][self.big_state[j]]
                 for row in xrange(3):
                     for col in xrange(3):
                         print self.P[self.who-1][self.board[j][(3 * row) + col]], "\t",
-                    print "" 
-            big_board, small_board, move = self.ai_move((3 * (old_move[1]%3)) + (old_move[2]%3), 1 if flag == 'x' else 2)
+                    print ""
+            big_board, small_board, move = self.ai_move((3 * (old_move[1]%3)) + (old_move[2]%3), 1 if flag == 'x' else 2, True if board.big_boards_status[old_move[0]][old_move[1]][old_move[2]] == flag else False)
         small_position = -1
         for i in xrange(9):
             move, value = divmod(move, 3)
@@ -310,7 +296,7 @@ class Bot:
                 if second_board_free:
                     moves.append((1, dir, second_board))
         return moves
-    def minimax(self, alpha, beta, depth, direction):
+    def minimax(self, alpha, beta, depth, direction, flag, bonus):
         # TODO: Check if the game ends (Terminal state)
         if time.time() - self.start_time >= 20:
             return 100000, (-1, -1, -1)
@@ -330,20 +316,19 @@ class Bot:
             for cell in cells:
                 for move in self.available_moves[self.flag - 1][cell[2]]:
                     # Cell = (board, direction, state)
-                    tmp_flag = self.flag
-                    tmp_bonus = self.bonus
-                    new_direction, bonus_transition = self.make_move(cell[0], cell[1], move)
-                    value, _ = self.minimax(alpha, beta, depth - 1, new_direction)
-                    self.undo_move(cell[0], cell[1], move, bonus_transition)
-                    self.bonus = tmp_bonus
-                    self.flag = tmp_flag
+                    new_direction = self.make_move(cell[0], cell[1], move)
+                    if self.is_abandon[self.board[cell[0]][cell[1]]] == flag and not bonus:
+                        value, _ = self.minimax(alpha, beta, depth - 1, new_direction, flag, True)
+                    else:
+                        value, _ = self.minimax(alpha, beta, depth - 1, new_direction, 3 - flag, True)
+                    self.undo_move(cell[0], cell[1], move)
                     if value > max_value:
                         max_value = value
                         best_move = (cell[0], cell[1], move)
                     if max_value > alpha:
                         alpha = max_value
-                    # if alpha >= beta:
-                    #     return max_value, best_move
+                    if alpha >= beta:
+                        return max_value, best_move
             return max_value, best_move
         else:
             # We are the min player
@@ -351,29 +336,27 @@ class Bot:
             best_move = (-1, -1, -1)
             for cell in cells:
                 for move in self.available_moves[self.flag - 1][cell[2]]:
-                    tmp_flag = self.flag
-                    tmp_bonus = self.bonus
-                    new_direction, bonus_transition = self.make_move(cell[0], cell[1], move)
-                    value, _ = self.minimax(alpha, beta, depth - 1, new_direction)
-                    self.undo_move(cell[0], cell[1], move, bonus_transition)
-                    self.bonus = tmp_bonus
-                    self.flag = tmp_flag
+                    new_direction = self.make_move(cell[0], cell[1], move)
+                    if self.is_abandon[self.board[cell[0]][cell[1]]] == flag and not bonus:
+                        value, _ = self.minimax(alpha, beta, depth - 1, new_direction, flag, True)
+                    else:
+                        value, _ = self.minimax(alpha, beta, depth - 1, new_direction, 3 - flag, True)
+                    self.undo_move(cell[0], cell[1], move)
                     if value < min_value:
                         min_value = value
                         best_move = (cell[0], cell[1], move)
                     if min_value < beta:
                         beta = min_value
-                    # if alpha >= beta:
-                    #     return min_value, best_move
+                    if alpha >= beta:
+                        return min_value, best_move
             return min_value, best_move
-    def ai_move(self, direction, flag):
+    def ai_move(self, direction, flag, bonus):
         max_depth = 5
         self.start_time = time.time()
-        while time.time() - self.start_time <= 20:
-            self.who = flag
-            self.flag = flag
-            max_depth += 1
-            _, best_move_sofar = self.minimax(-1000000, 1000000, max_depth, direction)
-            if best_move_sofar[0] != -1:
-                best_move = best_move_sofar
+        # while time.time() - self.start_time <= 20:
+        self.who = flag
+        max_depth += 1
+        _, best_move_sofar = self.minimax(-1000000, 1000000, max_depth, direction, flag, bonus)
+        if best_move_sofar[0] != -1:
+            best_move = best_move_sofar
         return best_move
