@@ -1,5 +1,6 @@
 import random
 from copy import deepcopy
+import time
 
 class Bot:
     def __init__(self):
@@ -15,7 +16,8 @@ class Bot:
         self.who = -1
         self.flag = -1
         self.patterns = []
-        self.patterns.append([0, 1, 2, 4])
+        self.start_time = 0
+        self.patterns.append([0, 1, 2, 1])
         self.patterns.append([3, 4, 5, 2])
         self.patterns.append([6, 7, 8, 5])
         self.patterns.append([0, 3, 6, 4])
@@ -121,7 +123,7 @@ class Bot:
             state, value = divmod(state, 3)
             if value == flag:
                 sum_of_position_weights += self.position_weight[i]
-        return (90 * A_0) + (10 * A_1) - (180 * B_0) - (20 * B_1) + sum_of_position_weights
+        return (50 * A_0) + (10 * A_1) - (75 * B_0) - (15 * B_1) + sum_of_position_weights
     # Returns P for big board
     def find_P_big(self, state, flag):
         #Not tested, tread with caution!
@@ -131,7 +133,7 @@ class Bot:
             state, value = divmod(state, 4)
             if value == flag:
                 sum_of_position_weights += self.position_weight[i]
-        return (50 * A_0) + (10 * A_1) - (25 * B_0) - (5 * B_1) + sum_of_position_weights
+        return (50 * A_0) + (10 * A_1) - (25 * B_0) - (15 * B_1) + sum_of_position_weights
     # Returns true if board is abandoned else False
     # Abandoned => Won, Draw
     def find_if_abandon(self, state):
@@ -277,6 +279,8 @@ class Bot:
         return moves
     def minimax(self, alpha, beta, depth, direction):
         # TODO: Check if the game ends (Terminal state)
+        if time.time() - self.start_time >= 20:
+            return 100000, (-1, -1, -1)
         cells = self.find_valid_cells(direction)
         if depth <= 0:
             return self.get_heuristic(), (-1, -1, -1)
@@ -324,7 +328,13 @@ class Bot:
                         return min_value, best_move
             return min_value, best_move
     def ai_move(self, direction, flag):
-        self.who = flag
-        self.flag = flag
-        _, best_move = self.minimax(-1000000, 1000000, 6, direction)
+        max_depth = 5
+        self.start_time = time.time()
+        while time.time() - self.start_time <= 20:
+            self.who = flag
+            self.flag = flag
+            max_depth += 1
+            _, best_move_sofar = self.minimax(-1000000, 1000000, max_depth, direction)
+            if best_move_sofar[0] != -1:
+                best_move = best_move_sofar
         return best_move
