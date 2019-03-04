@@ -356,7 +356,7 @@ if __name__ == '__main__':
 		print 'Usage: python simulator.py <option>'
 		print '<option> can be 1 => Random player vs. Random player'
 		print '                2 => Human vs. Random Player'
-		print '                3 => Human vs. Human'
+		print '                3 => Bot vs. Human'
 		sys.exit(1)
  
 	obj1 = ''
