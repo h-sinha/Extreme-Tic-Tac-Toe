@@ -2,14 +2,12 @@ import random
 from copy import deepcopy
 import time
 
-class Bot:
+class Team38:
     def __init__(self):
         #Flag => 1 = Max player (X), 2 = Min player (O)
         self.available_moves = [[self.find_available_moves(i, j + 1) for i in xrange(19683)] for j in xrange(2)]
-        self.position_weight_small = [3, 4, 3, 3, 6, 3, 4, 3, 4]
-        self.position_weight_big = [4, 3, 4, 3, 6, 3, 4, 3, 4]
+        self.position_weight_small = [4, 3, 4, 3, 6, 3, 4, 3, 4]
         self.P = [[self.find_P(i, j + 1) for i in xrange(19683)] for j in xrange(2)]
-        self.P_big = [[self.find_P_big(i, j+1) for i in xrange(262144)] for j in xrange(2)]
         self.is_abandon = [self.find_if_abandon(i) for i in xrange(19683)]
         self.big_abandon = [self.find_big_abandon(i) for i in xrange(262144)]
         self.board = [[int(0) for i in xrange(9)] for j in xrange(2)]
@@ -25,6 +23,7 @@ class Bot:
         self.patterns.append([2, 5, 8, 4])
         self.patterns.append([0, 4, 8, 6])
         self.patterns.append([2, 4, 6, 6])
+        self.optimize_weights = [14, 8, 14, 9, 21, 9, 14, 8, 14]
         return
     # Finds all possible moves and return in the for of 3^cell_number
     def find_available_moves(self, state, flag):
@@ -122,22 +121,10 @@ class Bot:
         for i in xrange(9):
             state, value = divmod(state, 3)
             if value == flag:
-                sum_of_position_weights += self.position_weight_small[i]
+                sum_of_position_weights += 2*self.position_weight_small[i]
             if value == 3 - flag:
-                sum_of_position_weights -= self.position_weight_small[i]
-        return (90 * A_0) + (20 * A_1) - (135 * B_0) - (30 * B_1) + sum_of_position_weights
-    # Returns P for big board
-    def find_P_big(self, state, flag):
-        #Not tested, tread with caution!
-        A_0, A_1, B_0, B_1 = self.find_big_pattern(state, flag)
-        sum_of_position_weights = int(0)
-        for i in xrange(9):
-            state, value = divmod(state, 4)
-            if value == flag:
-                sum_of_position_weights += self.position_weight_big[i]
-            if value == 3 - flag:
-                sum_of_position_weights -= self.position_weight_big[i]
-        return (90 * A_0) + (20 * A_1) - (135 * B_0) - (30 * B_1) + sum_of_position_weights
+                sum_of_position_weights -= 3*self.position_weight_small[i]
+        return (200 * A_0) + (20 * A_1) - (300 * B_0) - (30 * B_1) + sum_of_position_weights
     # Returns true if board is abandoned else False
     # Abandoned => Won, Draw
     def find_if_abandon(self, state):
@@ -249,16 +236,9 @@ class Bot:
         #We need specify the next possible smallboard position
         #in terms of 0-9
         if old_move[0] == -1:
-            return (0,4,4)
+            return (1, 3, 4)
             #First move if we get the chance
         else:
-            print old_move, "OUR MOVE", "Bonus: ", True if board.big_boards_status[old_move[0]][old_move[1]][old_move[2]] == flag else False
-            for j in xrange(2):
-                print "Board", j+1, ":", self.P_big[self.who - 1][self.big_state[j]]
-                for row in xrange(3):
-                    for col in xrange(3):
-                        print self.P[self.who-1][self.board[j][(3 * row) + col]], "\t",
-                    print ""
             big_board, small_board, move = self.ai_move((3 * (old_move[1]%3)) + (old_move[2]%3), 1 if flag == 'x' else 2, True if board.big_boards_status[old_move[0]][old_move[1]][old_move[2]] == flag else False)
         small_position = -1
         for i in xrange(9):
@@ -270,12 +250,11 @@ class Bot:
         small_row, small_col = divmod(small_position, 3)
         return (big_board, (big_row * 3) + small_row, (big_col * 3) + small_col)
     def get_heuristic(self):
-        ans1 = 0
-        ans2 = 0
-        for pattern in self.patterns:
-            ans1 = ans1 + pattern[3]*(self.P[self.who - 1][self.board[0][pattern[0]]] + self.P[self.who - 1][self.board[0][pattern[1]]] + self.P[self.who - 1][self.board[0][pattern[2]]])
-            ans2 = ans2 + pattern[3]*(self.P[self.who - 1][self.board[1][pattern[0]]] + self.P[self.who - 1][self.board[1][pattern[1]]] + self.P[self.who - 1][self.board[1][pattern[2]]])
-        return max(ans1, ans2)
+        ans = 0
+        # Optimize
+        for i in xrange(9):
+            ans = ans + ((self.P[self.who - 1][self.board[0][i]] + self.P[self.who - 1][self.board[1][i]]) * self.optimize_weights[i])
+        return ans
     def find_valid_cells(self, direction):
         moves = []
         first_board = self.board[0][direction]
@@ -316,6 +295,8 @@ class Bot:
             best_move = (-1, -1, -1)
             for cell in cells:
                 for move in self.available_moves[flag - 1][cell[2]]:
+                    if time.time() - self.start_time >= 22:
+                        return 10000000, (-1, -1, -1)
                     # Cell = (board, direction, state)
                     # tmp_board = deepcopy(self.board)
                     # tmp_big_state = deepcopy(self.big_state)
@@ -335,7 +316,7 @@ class Bot:
                     if max_value >= alpha:
                         alpha = max_value
                     # if alpha >= beta or time.time() - self.start_time >= 22:
-                    if alpha >= beta or time.time() - self.start_time >= 23:
+                    if alpha >= beta:
                         return max_value, best_move
             return max_value, best_move
         else:
@@ -344,6 +325,9 @@ class Bot:
             best_move = (-1, -1, -1)
             for cell in cells:
                 for move in self.available_moves[flag - 1][cell[2]]:
+                    if time.time() - self.start_time >= 22:
+                        return -10000000, (-1, -1, -1)
+
                     # tmp_board = deepcopy(self.board)
                     # tmp_big_state = deepcopy(self.big_state)
                     new_direction = self.make_move(cell[0], cell[1], move)
@@ -359,7 +343,7 @@ class Bot:
                         best_move = (cell[0], cell[1], move)
                     if min_value <= beta:
                         beta = min_value
-                    if alpha >= beta or time.time() - self.start_time >= 23:
+                    if alpha >= beta:
                         return min_value, best_move
                     # if alpha >= beta or time.time() - self.start_time >= 22:
             return min_value, best_move
@@ -367,9 +351,9 @@ class Bot:
         max_depth = 4
         best_move = (-1, -1, -1)
         self.who = flag
-        while time.time() - self.start_time <= 23:
+        while time.time() - self.start_time <= 22:
             max_depth += 1
             _, best_move_sofar = self.minimax(-10000000, 10000000, max_depth, direction, flag, bonus)
-            if best_move_sofar[0] != -1:
+            if best_move_sofar[0] != -1 and time.time() - self.start_time < float(22):
                 best_move = best_move_sofar
         return best_move

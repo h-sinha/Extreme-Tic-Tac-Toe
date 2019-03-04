@@ -60,7 +60,7 @@ int main()
 	 	FOR(i, 0, 9)
 	 	{
 	 		cur = a%10;
-	 		ans += cur*fastexpo(4,9 - i - 1);
+	 		ans += cur*fastexpo(3,9 - i - 1);
 	 		a/=10;
 	 	}
 	 	cout<<ans;

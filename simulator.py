@@ -16,9 +16,7 @@ import signal
 import time
 import copy
 import traceback
-from team38 import Bot as My_Bot
-from team38_wt import Bot as Wt_Bot
-# from Team73_2 import Team_73 as Rand_Player
+from team38 import Team38 as My_Bot
 
 TIME = 24
 MAX_PTS = 86
@@ -44,7 +42,6 @@ class Manual_Player:
 	def __init__(self):
 		pass
 	def move(self, board, old_move, flag):
-		print old_move
 		print 'Enter your move: <format:board row column> (you\'re playing with', flag + ")"	
 		mvp = raw_input()
 		mvp = mvp.split()
@@ -234,7 +231,7 @@ def player_turn(game_board, old_move, obj, ply, opp, flg):
 		update_status, small_board_won = game_board.update(old_move, p_move, flg)
 		if update_status == 'UNSUCCESSFUL':
 			WINNER = opp
-			MESSAGE = 'INVALID MOVE, ' + str(p_move)
+			MESSAGE = 'INVALID MOVE'
 			pts[opp] = MAX_PTS
 			return p_move, WINNER, MESSAGE, pts["P1"], pts["P2"], True, False
 
@@ -249,6 +246,7 @@ def player_turn(game_board, old_move, obj, ply, opp, flg):
 			WINNER = 'NONE'
 			MESSAGE = 'DRAW'
 			return p_move, WINNER, MESSAGE, pts["P1"], pts["P2"], True, False
+
 		return p_move, WINNER, MESSAGE, pts["P1"], pts["P2"], False, small_board_won
 
 def gameplay(obj1, obj2):				#game simulator
@@ -305,8 +303,7 @@ def gameplay(obj1, obj2):				#game simulator
 
 	print "Winner:", WINNER
 	print "Message", MESSAGE
-	if WINNER == "P1":
-		exit(1)
+
 	x = 0
 	d = 0
 	o = 0
@@ -367,7 +364,7 @@ if __name__ == '__main__':
 	option = sys.argv[1]	
 	if option == '1':
 		obj1 = My_Bot()
-		obj2 = Wt_Bot()
+		obj2 = Random_Player()
 
 	elif option == '2':
 		obj1 = Random_Player()
