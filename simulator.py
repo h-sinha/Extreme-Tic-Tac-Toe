@@ -17,6 +17,7 @@ import time
 import copy
 import traceback
 from team38 import Team38 as My_Bot
+from vaib import Team11 as Vaibhav_Bot
 
 TIME = 24
 MAX_PTS = 86
@@ -363,8 +364,8 @@ if __name__ == '__main__':
 	obj2 = ''
 	option = sys.argv[1]	
 	if option == '1':
-		obj1 = Random_Player()
-		obj2 = Random_Player()
+		obj1 = My_Bot()
+		obj2 = Vaibhav_Bot()
 
 	elif option == '2':
 		obj1 = Random_Player()
